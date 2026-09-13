@@ -32,7 +32,7 @@ class ResponseValidationVM(BaseModel):
     errorMessage: str | None = None
 
 class ExpectedResponseVM(BaseModel):
-    status: int
+    status: int = 200
     contentValidations: dict[str, ResponseValidationVM] | None = None
 
 class ApiTestRequestVM(BaseModel):
@@ -44,7 +44,7 @@ class ApiTestRequestVM(BaseModel):
     url: str
     method: str
     jsonBody: dict[str, Any] | None = None
-    expectedResponse: ExpectedResponseVM | None = None
+    expectedResponse: ExpectedResponseVM = ExpectedResponseVM()
     variables: dict[str, str] | None = None
     waitForEventPropagation: str | None = None
     referenceFile: str | None = None

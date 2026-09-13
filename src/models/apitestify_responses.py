@@ -25,3 +25,13 @@ class ApiTestResponseVM(BaseModel):
     storedVariables: dict[str, Any] = Field(default_factory=dict)
     status: int
     originalRequest: dict[str, Any]
+
+    def add_failure_for_status_code(self, expected: int, actual: int) -> None:
+        failure = FailedValidationVM(
+            key="Status Code",
+            type="equals",
+            expectedValue=f"{expected}",
+            actualValue=f"{actual}",
+            message=f"Expected status code: {expected}, but received: {actual}"
+        )
+        self.failedValidations.append(failure)

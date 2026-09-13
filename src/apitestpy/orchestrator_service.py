@@ -1,5 +1,6 @@
 import requests
 from models.apitestify_requests import ApiTestRequestVM, ApiTestRequestVMList
+from models.apitestify_responses import ApiTestResponseVM
 from .auth_service import AuthService
 
 class OrchestratorService:
@@ -37,7 +38,24 @@ class OrchestratorService:
             kwargs = self.__build_request_kwargs(api_test_request, request_auth_token)
             response = requests.request(**kwargs)
 
-            responses.append(response)
+            api_test_response = ApiTestResponseVM(
+                requestId=api_test_request.id,
+                status=response.status_code,
+                # TODO: add storedVariables
+                originalResponse=response.json() if response.headers.get("Content-Type") == "application/json" else response.text,
+                originalRequest={
+                    "url": api_test_request.url,
+                    "jsonBody": api_test_request.jsonBody,
+                }
+            )
+
+            if api_test_request.expectedResponse.status != response.status_code:
+                api_test_response.add_failure_for_status_code(api_test_request.expectedResponse.status, response.status_code)
+
+            # TODO: validate all content validations
+                
+            api_test_response.isValidationSuccess = api_test_response.failedValidations == []
+            responses.append(api_test_response)
 
         return {"responses": responses}
     
