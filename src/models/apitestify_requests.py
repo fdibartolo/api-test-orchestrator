@@ -49,6 +49,21 @@ class ApiTestRequestVM(BaseModel):
     waitForEventPropagation: str | None = None
     referenceFile: str | None = None
 
+    def build_request_kwargs(self, auth_token: str | None) -> dict[str, Any]:
+        headers = dict(self.headers) if self.headers else {}
+        if auth_token:
+            headers.setdefault("Authorization", f"Bearer {auth_token}")
+
+        # TODO: add referenceFile prop - multipart
+        return {
+            "method": self.method,
+            "url": self.url,
+            "headers": headers,
+            "cookies": self.cookies,
+            "params": self.queryParams,
+            "json": self.jsonBody,
+        }
+
 class ApiTestRequestVMList(BaseModel):
     authenticationParams: AuthInfoVM | None = None
     apiTestRequests: list[ApiTestRequestVM]

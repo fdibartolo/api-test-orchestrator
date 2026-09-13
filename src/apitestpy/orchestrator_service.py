@@ -4,22 +4,8 @@ from models.apitestify_responses import ApiTestResponseVM
 from .auth_service import AuthService
 
 class OrchestratorService:
-    def __init__(self):
-        self.auth_service = AuthService()
-
-    def __build_request_kwargs(self, api_test_request: ApiTestRequestVM, auth_token: str):
-        headers = dict(api_test_request.headers) if api_test_request.headers else {}
-        headers.setdefault("Authorization", f"Bearer {auth_token}")
-
-        # TODO: add referenceFile prop - multipart
-        return {
-            "method": api_test_request.method,
-            "url": api_test_request.url,
-            "headers": headers,
-            "cookies": api_test_request.cookies,
-            "params": api_test_request.queryParams,
-            "json": api_test_request.jsonBody,
-        }
+    def __init__(self, auth_service: AuthService):
+        self.auth_service = auth_service
 
     def validate(self, request: ApiTestRequestVMList):
         auth_token = self.auth_service.get_auth_token(request.authenticationParams)
@@ -35,7 +21,7 @@ class OrchestratorService:
             if api_test_request.authenticationParams is not None:
                 request_auth_token = self.auth_service.get_auth_token(api_test_request.authenticationParams)
 
-            kwargs = self.__build_request_kwargs(api_test_request, request_auth_token)
+            kwargs = api_test_request.build_request_kwargs(request_auth_token)
             response = requests.request(**kwargs)
 
             api_test_response = ApiTestResponseVM(
