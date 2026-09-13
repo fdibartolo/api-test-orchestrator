@@ -1,0 +1,117 @@
+public class ApiTestRequestVM
+{
+    public string Id { get; set; }
+
+    public AuthInfoVM? AuthenticationParams { get; set; }
+    public Dictionary<string, string>? Headers { get; set; }
+    public Dictionary<string, string>? Cookies { get; set; }
+    public Dictionary<string, string>? QueryParams { get; set; }
+    public string Url { get; set; }
+    public string Method { get; set; }
+    public JObject? JsonBody { get; set; }
+    public ExpectedResponseVM? ExpectedResponse { get; set; }
+    public Dictionary<string, string>? Variables { get; set; }
+    public string? WaitForEventPropagation { get; set; }
+    public string? ReferenceFile { get; set; }
+}
+
+public class AuthInfoVM
+{
+    public AuthMethod Type { get; set; }
+    public HttpTokenParameter? Credentials { get; set; }
+    public string? TokenProvided { get; set; }
+}
+
+public enum AuthMethod
+{
+    /// <summary>
+    /// No authentication
+    /// </summary>
+    Anonymous,
+    /// <summary>
+    /// User and password
+    /// </summary>
+    Basic,
+    /// <summary>
+    /// Bearer based authentication
+    /// </summary>
+    Bearer
+}
+
+
+public class HttpTokenParameter
+{
+    /// <summary>
+    /// Type request token
+    /// </summary>
+    public enum Grant_Type
+    {
+        /// <summary>
+        /// without user
+        /// </summary>
+        client_credentials,
+
+        /// <summary>
+        /// with credential
+        /// </summary>
+        password
+
+    }
+
+    public Grant_Type GrantType { get; set; }
+
+    /// <summary>
+    /// Scope
+    /// </summary>
+    public string Scope { get; set; }
+
+    /// <summary>
+    /// Resource
+    /// </summary>
+    public string? Resource { get; set; }
+
+    /// <summary>
+    /// Tenant 
+    /// </summary>
+    public string Tenant { get; set; }
+
+    /// <summary>
+    /// CLient ID
+    /// </summary>
+    public string ClientId { get; set; }
+
+    /// <summary>
+    /// Client secret
+    /// </summary>
+    public string ClientSecret { get; set; }
+
+    /// <summary>
+    /// user
+    /// </summary>
+    public string User { get; set; }
+
+    /// <summary>
+    /// Password
+    /// </summary>
+    public string Password { get; set; }
+}
+
+    public class ExpectedResponseVM
+    {
+        public int Status { get; set; }
+        public Dictionary<string, ResponseValidationVM>? ContentValidations { get; set; }
+    }
+
+    public class ResponseValidationVM
+    {
+        public string Type { get; set; }
+        public object? Value { get; set; }
+        public string? ErrorMessage { get; set; }
+    }
+
+    public class ApiTestRequestVMList
+    {
+        public AuthInfoVM? AuthenticationParams { get; set; }
+        public List<ApiTestRequestVM> ApiTestRequests { get; set; }
+        public Dictionary<string, string> GlobalVariables { get; set; }
+    }
