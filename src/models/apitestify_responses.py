@@ -19,7 +19,7 @@ class FailedValidationVM(BaseModel):
 
 class ApiTestResponseVM(BaseModel):
     requestId: str
-    isValidationSuccess: bool
+    isValidationSuccess: bool | None = None
     failedValidations: list[FailedValidationVM] = Field(default_factory=list)
     originalResponse: dict[str, Any]
     storedVariables: dict[str, Any] = Field(default_factory=dict)

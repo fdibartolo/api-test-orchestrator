@@ -28,7 +28,7 @@ class OrchestratorService:
                 requestId=api_test_request.id,
                 status=response.status_code,
                 # TODO: add storedVariables
-                originalResponse=response.json() if response.headers.get("Content-Type") == "application/json" else response.text,
+                originalResponse=response.json() if "application/json" in (response.headers.get("Content-Type") or "") else response.text,
                 originalRequest={
                     "url": api_test_request.url,
                     "jsonBody": api_test_request.jsonBody,
