@@ -1,5 +1,5 @@
 import requests
-from models.apitestify_requests import ApiTestRequestVM, ApiTestRequestVMList
+from models.apitestify_requests import ApiTestRequestVMList
 from models.apitestify_responses import ApiTestResponseVM
 from .auth_service import AuthService
 
