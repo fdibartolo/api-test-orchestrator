@@ -1,7 +1,7 @@
 from fastapi import APIRouter #, HTTPException, Depends
-from apitestpy.orchestrator_service import OrchestratorService
-from apitestpy.response_validation_service import ResponseValidationService
-from apitestpy.auth_service import AuthService
+from apitest.orchestrator_service import OrchestratorService
+from apitest.response_validation_service import ResponseValidationService
+from apitest.auth_service import AuthService
 from models.apitestify_requests import ApiTestRequestVMList
 
 router = APIRouter()

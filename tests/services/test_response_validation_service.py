@@ -1,6 +1,6 @@
 from http import HTTPStatus
 import pytest
-from apitestpy.response_validation_service import ResponseValidationService
+from apitest.response_validation_service import ResponseValidationService
 from models.apitestify_requests import ResponseValidationVM
 from models.apitestify_responses import ApiTestResponseVM
 

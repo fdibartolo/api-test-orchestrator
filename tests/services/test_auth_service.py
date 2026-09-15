@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
-from apitestpy.auth_service import AuthService
+from apitest.auth_service import AuthService
 from models.apitestify_requests import AuthInfoVM, AuthMethod, GrantType, HttpTokenParameter
 
 @pytest.fixture
@@ -50,7 +50,7 @@ def test_get_auth_token_raises_when_credentials_missing() -> None:
     with pytest.raises(Exception, match="Failed to acquire token: missing credentials"):
         auth_service.get_auth_token(auth_info)
 
-@patch("apitestpy.auth_service.requests.post")
+@patch("apitest.auth_service.requests.post")
 def test_get_auth_token_client_credentials_success(
     mock_post: MagicMock, client_credentials_auth_info: AuthInfoVM
 ) -> None:
@@ -79,7 +79,7 @@ def test_get_auth_token_client_credentials_success(
     assert auth_service.client_id == "client-123"
     assert auth_service.client_secret == "secret-456"
 
-@patch("apitestpy.auth_service.requests.post")
+@patch("apitest.auth_service.requests.post")
 def test_get_auth_token_password_grant_success(
     mock_post: MagicMock, password_auth_info: AuthInfoVM
 ) -> None:
@@ -107,7 +107,7 @@ def test_get_auth_token_password_grant_success(
         },
     )
 
-@patch("apitestpy.auth_service.requests.post")
+@patch("apitest.auth_service.requests.post")
 def test_get_auth_token_reuses_cached_valid_token(
     mock_post: MagicMock, client_credentials_auth_info: AuthInfoVM
 ) -> None:
@@ -127,7 +127,7 @@ def test_get_auth_token_reuses_cached_valid_token(
     assert token == "cached-valid-token"
     mock_post.assert_not_called()
 
-@patch("apitestpy.auth_service.requests.post")
+@patch("apitest.auth_service.requests.post")
 def test_get_auth_token_fetches_new_token_when_cached_token_expired(
     mock_post: MagicMock, client_credentials_auth_info: AuthInfoVM
 ) -> None:
@@ -155,7 +155,7 @@ def test_get_auth_token_fetches_new_token_when_cached_token_expired(
     assert token == "fresh-token"
     mock_post.assert_called_once()
 
-@patch("apitestpy.auth_service.requests.post")
+@patch("apitest.auth_service.requests.post")
 def test_get_auth_token_http_error_raises_exception(
     mock_post: MagicMock, client_credentials_auth_info: AuthInfoVM
 ) -> None:
