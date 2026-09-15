@@ -21,11 +21,8 @@ class OrchestratorService:
 
         responses = []
         for api_test_request in request.apiTestRequests:
-            self.process_variables_service.replace_variables(
-                request.globalVariables, api_test_request
-            )
+            self.process_variables_service.replace_variables(request.globalVariables, api_test_request)
 
-            # TODO: replace vars
             # TODO: evaluate dynamic expressions
             
             request_auth_token = auth_token
@@ -59,8 +56,10 @@ class OrchestratorService:
             api_test_response.storedVariables = request_variables
             api_test_response.failedValidations += failures
 
+            request.globalVariables.update(request_variables)
+            
             api_test_response.isValidationSuccess = api_test_response.failedValidations == []
             responses.append(api_test_response)
 
-        return {"responses": responses}
+        return responses
     
