@@ -2,10 +2,12 @@ import requests
 from models.apitestify_requests import ApiTestRequestVMList
 from models.apitestify_responses import ApiTestResponseVM
 from .auth_service import AuthService
+from .response_validation_service import ResponseValidationService
 
 class OrchestratorService:
-    def __init__(self, auth_service: AuthService):
+    def __init__(self, auth_service: AuthService, response_validation_service: ResponseValidationService):
         self.auth_service = auth_service
+        self.response_validation_service = response_validation_service
 
     def validate(self, request: ApiTestRequestVMList):
         auth_token = self.auth_service.get_auth_token(request.authenticationParams)
@@ -38,7 +40,11 @@ class OrchestratorService:
             if api_test_request.expectedResponse.status != response.status_code:
                 api_test_response.add_failure_for_status_code(api_test_request.expectedResponse.status, response.status_code)
 
-            # TODO: validate all content validations
+            failed_validations = self.response_validation_service.validate_response(
+                api_test_request.expectedResponse.contentValidations,
+                api_test_response
+            )
+            api_test_response.failedValidations += failed_validations
                 
             api_test_response.isValidationSuccess = api_test_response.failedValidations == []
             responses.append(api_test_response)
