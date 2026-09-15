@@ -1,7 +1,6 @@
 import json
 import re
 from typing import Any
-
 from jsonpath_ng.ext import parse as jsonpath_parse
 from models.apitestify_requests import ApiTestRequestVM
 from models.apitestify_responses import ApiTestResponseVM, FailedValidationVM
