@@ -13,6 +13,7 @@ orchestrator_service = OrchestratorService(
     auth_service,
     response_validation_service,
     process_variables_service,
+    # TODO: pass env vars for secrets replacements
 )
 
 @router.post("/validate")

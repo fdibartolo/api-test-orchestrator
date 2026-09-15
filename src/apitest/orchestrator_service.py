@@ -10,11 +10,11 @@ class OrchestratorService:
         self,
         auth_service: AuthService,
         response_validation_service: ResponseValidationService,
-        process_variables_service: ProcessVariablesService | None = None,
+        process_variables_service: ProcessVariablesService
     ):
         self.auth_service = auth_service
         self.response_validation_service = response_validation_service
-        self.process_variables_service = process_variables_service or ProcessVariablesService()
+        self.process_variables_service = process_variables_service
 
     def validate(self, request: ApiTestRequestVMList):
         auth_token = self.auth_service.get_auth_token(request.authenticationParams)
