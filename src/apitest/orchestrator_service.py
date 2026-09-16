@@ -2,31 +2,33 @@ import requests
 from models.apitestify_requests import ApiTestRequestVMList
 from models.apitestify_responses import ApiTestResponseVM
 from .auth_service import AuthService
-from .process_variables_service import ProcessVariablesService
+from .vars_evaluator_service import VariablesEvaluatorService
+from .dynamic_vars_evaluator_service import DynamicVarsEvaluatorService
 from .response_validation_service import ResponseValidationService
 
 class OrchestratorService:
-    def __init__(
-        self,
+    def __init__(self,
         auth_service: AuthService,
         response_validation_service: ResponseValidationService,
-        process_variables_service: ProcessVariablesService
+        variables_evaluator_service: VariablesEvaluatorService,
+        dynamic_vars_evaluator_service: DynamicVarsEvaluatorService,
     ):
         self.auth_service = auth_service
         self.response_validation_service = response_validation_service
-        self.process_variables_service = process_variables_service
+        self.vars_evaluator_service = variables_evaluator_service
+        self.dynamic_vars_evaluator_service = dynamic_vars_evaluator_service
 
     def validate(self, request: ApiTestRequestVMList):
         auth_token = self.auth_service.get_auth_token(request.authenticationParams)
 
         responses = []
         for api_test_request in request.apiTestRequests:
-            self.process_variables_service.replace_variables(request.globalVariables, api_test_request)
+            self.vars_evaluator_service.replace_variables(request.globalVariables, api_test_request)
 
-            api_test_request.jsonBody = self.process_variables_service.replace_dynamic_variables(
+            api_test_request.jsonBody = self.dynamic_vars_evaluator_service.replace_dynamic_variables(
                 api_test_request.jsonBody
             )
-            api_test_request.queryParams = self.process_variables_service.replace_dynamic_variables(
+            api_test_request.queryParams = self.dynamic_vars_evaluator_service.replace_dynamic_variables(
                 api_test_request.queryParams
             )
             
@@ -56,7 +58,7 @@ class OrchestratorService:
             )
             api_test_response.failedValidations += failed_validations
 
-            request_variables, failures = self.process_variables_service.resolve_request_variables(
+            request_variables, failures = self.vars_evaluator_service.resolve_request_variables(
                 api_test_request.variables, api_test_response)
             api_test_response.storedVariables = request_variables
             api_test_response.failedValidations += failures
