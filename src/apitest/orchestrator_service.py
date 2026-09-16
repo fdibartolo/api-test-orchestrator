@@ -23,7 +23,12 @@ class OrchestratorService:
         for api_test_request in request.apiTestRequests:
             self.process_variables_service.replace_variables(request.globalVariables, api_test_request)
 
-            # TODO: evaluate dynamic expressions
+            api_test_request.jsonBody = self.process_variables_service.replace_dynamic_variables(
+                api_test_request.jsonBody
+            )
+            api_test_request.queryParams = self.process_variables_service.replace_dynamic_variables(
+                api_test_request.queryParams
+            )
             
             request_auth_token = auth_token
             if api_test_request.authenticationParams is not None:
