@@ -1,7 +1,21 @@
 import pytest
 from apitest.vars_evaluator_service import VariablesEvaluatorService
-from models.apitestify_requests import ApiTestRequestVM, ExpectedResponseVM, ResponseValidationVM
+from models.apitestify_requests import ApiTestRequestVM, AuthInfoVM, AuthMethod, ExpectedResponseVM, GrantType, HttpTokenParameter, ResponseValidationVM
 from models.apitestify_responses import ApiTestResponseVM
+
+def build_auth_info(client_secret: str = "#{clientSecret}#", password: str = "#{password}#") -> AuthInfoVM:
+    return AuthInfoVM(
+        type=AuthMethod.BEARER,
+        credentials=HttpTokenParameter(
+            grantType=GrantType.PASSWORD,
+            scope="openid profile",
+            tenant="https://login.example.test/token",
+            clientId="client-id",
+            clientSecret=client_secret,
+            user="user@example.test",
+            password=password,
+        ),
+    )
 
 def build_request() -> ApiTestRequestVM:
     return ApiTestRequestVM(
@@ -31,6 +45,23 @@ def build_response(original_response: dict) -> ApiTestResponseVM:
         status=200,
         originalRequest={"method": "GET", "url": "https://example.test"}
     )
+
+def test_replace_secrets_updates_client_secret_and_password() -> None:
+    auth_info = build_auth_info()
+    VariablesEvaluatorService().replace_secrets(
+        {"clientSecret": "resolved-secret", "password": "resolved-password"},
+        auth_info,
+    )
+    assert auth_info.credentials.clientSecret == "resolved-secret"
+    assert auth_info.credentials.password == "resolved-password"
+
+def test_replace_secrets_preserves_unresolved_placeholders() -> None:
+    auth_info = build_auth_info()
+    VariablesEvaluatorService().replace_secrets(
+        {"clientSecret": "resolved-secret"}, auth_info
+    )
+    assert auth_info.credentials.clientSecret == "resolved-secret"
+    assert auth_info.credentials.password == "#{password}#"
 
 def test_replace_variables_updates_request_and_validations() -> None:
     request = build_request()

@@ -12,13 +12,16 @@ class OrchestratorService:
         response_validation_service: ResponseValidationService,
         variables_evaluator_service: VariablesEvaluatorService,
         dynamic_vars_evaluator_service: DynamicVarsEvaluatorService,
+        secrets: dict[str, str]
     ):
         self.auth_service = auth_service
         self.response_validation_service = response_validation_service
         self.vars_evaluator_service = variables_evaluator_service
         self.dynamic_vars_evaluator_service = dynamic_vars_evaluator_service
+        self.secrets = secrets
 
     def validate(self, request: ApiTestRequestVMList):
+        self.vars_evaluator_service.replace_secrets(self.secrets, request.authenticationParams)
         auth_token = self.auth_service.get_auth_token(request.authenticationParams)
 
         responses = []
@@ -34,6 +37,7 @@ class OrchestratorService:
             
             request_auth_token = auth_token
             if api_test_request.authenticationParams is not None:
+                self.vars_evaluator_service.replace_secrets(self.secrets, api_test_request.authenticationParams)
                 request_auth_token = self.auth_service.get_auth_token(api_test_request.authenticationParams)
 
             kwargs = api_test_request.build_request_kwargs(request_auth_token)

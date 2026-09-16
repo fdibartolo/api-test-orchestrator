@@ -10,3 +10,5 @@ wheels/
 .venv
 
 cheatsheet.md
+
+.env

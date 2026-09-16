@@ -2,12 +2,19 @@ import json
 import re
 from typing import Any
 from jsonpath_ng.ext import parse as jsonpath_parse
-from models.apitestify_requests import ApiTestRequestVM
+from models.apitestify_requests import ApiTestRequestVM, AuthInfoVM
 from models.apitestify_responses import ApiTestResponseVM, FailedValidationVM
 
 _VARIABLE_PATTERN = re.compile(r"#\{(.+?)\}#")
 
 class VariablesEvaluatorService:
+    def replace_secrets(self, variables: dict[str, str], auth_info: AuthInfoVM) -> None:
+        auth_info.credentials.clientSecret = self._replace_value(
+            auth_info.credentials.clientSecret, variables)
+
+        auth_info.credentials.password = self._replace_value(
+            auth_info.credentials.password, variables)
+
     def replace_variables(self, variables: dict[str, str], api_test_request: ApiTestRequestVM) -> None:
         if not variables:
             return
