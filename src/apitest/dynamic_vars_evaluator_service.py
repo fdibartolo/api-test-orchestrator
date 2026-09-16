@@ -4,6 +4,8 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+_DEFAULT_DATE_FORMAT = "%Y-%m-%d"
+_DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%SZ"
 _DYNAMIC_TODAY_PATTERN = re.compile(r"\{\{DynamicToday\}\}(?::([^:{}]+))?")
 _DYNAMIC_NOW_PATTERN = re.compile(r"\{\{DynamicNow\}\}(?::([^:{}]+))?")
 _DYNAMIC_FUTURE_PATTERN = re.compile(r"\{\{DynamicFuture\}\}:(\d+)([dhm])(?::([^:{}]+))?")
@@ -28,7 +30,7 @@ class DynamicVarsEvaluatorService:
         utc_now = datetime.now(timezone.utc)
         today_match = _DYNAMIC_TODAY_PATTERN.search(value)
         if today_match:
-            date_format = today_match.group(1) or "yyyy-MM-dd"
+            date_format = today_match.group(1) or _DEFAULT_DATE_FORMAT
             value = value.replace(
                 today_match.group(0),
                 self._format_dynamic_datetime(utc_now, date_format),
@@ -36,7 +38,7 @@ class DynamicVarsEvaluatorService:
 
         now_match = _DYNAMIC_NOW_PATTERN.search(value)
         if now_match:
-            date_format = now_match.group(1) or "u"
+            date_format = now_match.group(1) or _DEFAULT_DATETIME_FORMAT
             value = value.replace(
                 now_match.group(0),
                 self._format_dynamic_datetime(utc_now, date_format),
@@ -47,7 +49,7 @@ class DynamicVarsEvaluatorService:
             if date_match:
                 amount = int(date_match.group(1)) * sign
                 unit = date_match.group(2)
-                date_format = date_match.group(3) or "u"
+                date_format = date_match.group(3) or _DEFAULT_DATETIME_FORMAT
                 delta = {
                     "d": timedelta(days=amount),
                     "h": timedelta(hours=amount),
@@ -71,8 +73,11 @@ class DynamicVarsEvaluatorService:
         return value
 
     def _format_dynamic_datetime(self, value: datetime, date_format: str) -> str:
-        if date_format == "u":
-            return value.strftime("%Y-%m-%d %H:%M:%SZ")
+        if date_format == _DEFAULT_DATETIME_FORMAT:
+            return value.strftime(_DEFAULT_DATETIME_FORMAT)
+
+        if date_format == _DEFAULT_DATE_FORMAT:
+            return value.strftime(_DEFAULT_DATE_FORMAT)
 
         python_format = date_format
         replacements = (
