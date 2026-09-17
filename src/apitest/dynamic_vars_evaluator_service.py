@@ -22,9 +22,9 @@ class DynamicVarsEvaluatorService:
     def replace_dynamic_variables(self, value: Any) -> Any:
         """Replace supported dynamic variables recursively in a value.
 
-        Dictionaries and lists are traversed recursively. Strings beginning
-        with ``{{`` are evaluated for supported dynamic tokens; all other
-        values and strings are returned unchanged.
+        Dictionaries and lists are traversed recursively. Strings are evaluated
+        for supported dynamic tokens wherever they occur; all other values and
+        strings are returned unchanged.
 
         Args:
             value: A scalar value, string, dictionary, list, or ``None`` to
@@ -39,7 +39,7 @@ class DynamicVarsEvaluatorService:
             }
         if isinstance(value, list):
             return [self.replace_dynamic_variables(item) for item in value]
-        if isinstance(value, str) and value.startswith("{{"):
+        if isinstance(value, str):
             return self._resolve_dynamic_value(value)
         return value
 
@@ -88,10 +88,14 @@ class DynamicVarsEvaluatorService:
             digits = int(random_number_match.group(1))
             minimum = 10 ** (digits - 1)
             maximum = 10**digits - 1
-            return str(random.randint(minimum, maximum))
+            value = value.replace(
+                random_number_match.group(0),
+                str(random.randint(minimum, maximum)),
+            )
 
-        if _DYNAMIC_RANDOM_GUID_PATTERN.search(value):
-            return str(uuid.uuid4())
+        guid_match = _DYNAMIC_RANDOM_GUID_PATTERN.search(value)
+        if guid_match:
+            value = value.replace(guid_match.group(0), str(uuid.uuid4()))
 
         return value
 

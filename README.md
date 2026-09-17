@@ -203,7 +203,7 @@ Define request-level variables as a map from the name you want to store to a JSO
 
 In this example, the first response's `id` and `name` become `userId` and `userName`. The second request can use both values through the same `#{variableName}#` syntax. If a JSONPath does not find a value, the variable is not stored and the request result includes a `SelectToken` validation failure. Since execution stops after the first failed validation, later requests are not sent.
 
-Dynamic placeholders are resolved in `jsonBody` and `queryParams` before each request is sent. Values are evaluated in UTC. A placeholder must be the beginning of a string to be evaluated; placeholders inside nested objects and arrays are supported, while other scalar values are left unchanged.
+Dynamic placeholders are resolved in `jsonBody` and `queryParams` before each request is sent. Values are evaluated in UTC. Placeholders can appear anywhere in a string, including between a prefix and suffix, and placeholders inside nested objects and arrays are supported. Other scalar values are left unchanged.
 
 #### Available dynamic placeholders
 

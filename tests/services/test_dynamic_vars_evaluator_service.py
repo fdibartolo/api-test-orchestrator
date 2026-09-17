@@ -34,12 +34,29 @@ def test_replace_dynamic_variables_generates_random_number() -> None:
     assert re.fullmatch(r"\d{8}", result)
 
 
+def test_replace_dynamic_variables_preserves_text_around_random_number() -> None:
+    result = DynamicVarsEvaluatorService()._resolve_dynamic_value(
+        "request-{{DynamicRandomNumber}}:8-suffix"
+    )
+    assert re.fullmatch(r"request-\d{8}-suffix", result)
+
+
 def test_replace_dynamic_variables_generates_guid() -> None:
     result = DynamicVarsEvaluatorService()._resolve_dynamic_value(
         "{{DynamicRandomGuid}}"
     )
     assert re.fullmatch(
         r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+        result,
+    )
+
+
+def test_replace_dynamic_variables_preserves_text_around_guid() -> None:
+    result = DynamicVarsEvaluatorService()._resolve_dynamic_value(
+        "request-{{DynamicRandomGuid}}-suffix"
+    )
+    assert re.fullmatch(
+        r"request-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-suffix",
         result,
     )
 
@@ -64,7 +81,7 @@ def test_replace_dynamic_variables_in_json_walks_nested_values() -> None:
         result["nested"]["items"][0],
     )
     assert result["nested"]["items"][1] == 42
-    assert result["nested"]["items"][2] == "plain text {{DynamicToday}}"
+    assert re.fullmatch(r"plain text \d{4}-\d{2}-\d{2}", result["nested"]["items"][2])
 
 
 def test_replace_dynamic_variables_in_json_handles_null_values() -> None:

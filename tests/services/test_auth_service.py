@@ -58,7 +58,9 @@ def test_get_auth_token_raises_when_credentials_missing() -> None:
     auth_service = AuthService()
     auth_info = AuthInfoVM(type=AuthMethod.BEARER, credentials=None, tokenProvided=None)
 
-    with pytest.raises(ConnectionError, match="Failed to acquire token: missing credentials"):
+    with pytest.raises(
+        ConnectionError, match="Failed to acquire token: missing credentials"
+    ):
         auth_service.get_auth_token(auth_info)
 
 
@@ -181,5 +183,7 @@ def test_get_auth_token_http_error_raises_exception(
     mock_response.text = "Unauthorized client"
     mock_post.return_value = mock_response
 
-    with pytest.raises(ConnectionError, match="Failed to acquire token: Unauthorized client"):
+    with pytest.raises(
+        ConnectionError, match="Failed to acquire token: Unauthorized client"
+    ):
         auth_service.get_auth_token(client_credentials_auth_info)
