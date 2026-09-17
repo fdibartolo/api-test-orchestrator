@@ -9,6 +9,20 @@ wheels/
 # Virtual environments
 .venv
 
+# Miscellaneous local files
 cheatsheet.md
 
+# Environment variables
 .env
+
+# Test coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Pytest
+.pytest_cache/
+
+# Ruff
+.ruff_cache/
