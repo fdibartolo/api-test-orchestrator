@@ -14,7 +14,22 @@ _DYNAMIC_RANDOM_NUMBER_PATTERN = re.compile(r"\{\{DynamicRandomNumber\}\}:(\d+)"
 _DYNAMIC_RANDOM_GUID_PATTERN = re.compile(r"\{\{DynamicRandomGuid\}\}")
 
 class DynamicVarsEvaluatorService:
+    """Resolve dynamic date, time, number, and GUID variables in values."""
+
     def replace_dynamic_variables(self, value: Any) -> Any:
+        """Replace supported dynamic variables recursively in a value.
+
+        Dictionaries and lists are traversed recursively. Strings beginning
+        with ``{{`` are evaluated for supported dynamic tokens; all other
+        values and strings are returned unchanged.
+
+        Args:
+            value: A scalar value, string, dictionary, list, or ``None`` to
+                evaluate.
+
+        Returns:
+            The value with supported dynamic variables replaced.
+        """
         if isinstance(value, dict):
             return {key: self.replace_dynamic_variables(item) for key, item in value.items()}
         if isinstance(value, list):

@@ -8,7 +8,18 @@ from models.apitestify_responses import ApiTestResponseVM, FailedValidationVM
 _VARIABLE_PATTERN = re.compile(r"#\{(.+?)\}#")
 
 class VariablesEvaluatorService:
+    """Resolve secret and request variables used during API test execution."""
+
     def replace_secrets(self, variables: dict[str, str], auth_info: AuthInfoVM) -> None:
+        """Replace secret placeholders in authentication credentials.
+
+        Unresolved placeholders remain unchanged. The supplied authentication
+        model is updated in place.
+
+        Args:
+            variables: Secret names and their replacement values.
+            auth_info: Authentication information whose credentials are updated.
+        """
         auth_info.credentials.clientSecret = self._replace_value(
             auth_info.credentials.clientSecret, variables)
 
@@ -16,6 +27,15 @@ class VariablesEvaluatorService:
             auth_info.credentials.password, variables)
 
     def replace_variables(self, variables: dict[str, str], api_test_request: ApiTestRequestVM) -> None:
+        """Replace request-variable placeholders throughout an API test request.
+
+        URL components, request bodies, variables, and response validations are
+        updated in place. Unresolved placeholders remain unchanged.
+
+        Args:
+            variables: Variable names and their replacement values.
+            api_test_request: API test request to update.
+        """
         if not variables:
             return
 
@@ -50,6 +70,19 @@ class VariablesEvaluatorService:
         return _VARIABLE_PATTERN.sub(lambda match: variables.get(match.group(1), match.group(0)), value)
 
     def resolve_request_variables(self, variables: dict[str, str], response: ApiTestResponseVM) -> tuple[dict[str, Any], list[FailedValidationVM]]:
+        """Resolve variables from an API response using JSONPath expressions.
+
+        Args:
+            variables: Variable names mapped to JSONPath expressions.
+            response: API response containing the values to extract from.
+
+        Returns:
+            A tuple containing resolved variables and validation failures for
+            missing or invalid JSONPath expressions.
+
+        Raises:
+            ValueError: If the response does not contain an original response.
+        """
         if response.originalResponse is None:
             raise ValueError("OriginalResponse is null")
 

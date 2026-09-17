@@ -5,7 +5,24 @@ from models.apitestify_requests import ResponseValidationVM
 from models.apitestify_responses import ApiTestResponseVM, FailedValidationVM
 
 class ResponseValidationService:
+    """Validate API responses against configured JSONPath-based rules."""
+
     def validate_response(self, content_validations: dict[str, ResponseValidationVM], api_test_response: ApiTestResponseVM) -> list[FailedValidationVM]:
+        """Evaluate content validations against an API response.
+
+        A response with status ``204 No Content`` or no configured validations
+        produces no failures. Each validation key is treated as a JSONPath
+        expression, with support for field existence, value, collection, and
+        length checks.
+
+        Args:
+            content_validations: JSONPath expressions mapped to validation rules.
+            api_test_response: Response content and status to validate.
+
+        Returns:
+            A list of validation failures. Invalid JSONPath expressions and
+            missing tokens are reported as ``SelectToken`` failures.
+        """
         json_content = api_test_response.originalResponse
 
         if api_test_response.status == HTTPStatus.NO_CONTENT:

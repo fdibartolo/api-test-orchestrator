@@ -3,6 +3,13 @@ from datetime import datetime, timedelta
 from models.apitestify_requests import AuthInfoVM, GrantType
 
 class AuthService:
+    """Acquire and cache bearer tokens for authentication requests.
+
+    The service returns a caller-provided token when available, reuses a cached
+    token while it is unexpired and matches the request credentials, or obtains
+    a new token using the configured client-credentials or password grant.
+    """
+
     def __init__(self):
         self.refresh_token = None
         self.expired_time_token = None
@@ -14,7 +21,7 @@ class AuthService:
         self.resource = None
         self.grant_type = None
     
-    def __auth_token_is_present_and_valid(self, auth_params: AuthInfoVM):
+    def _auth_token_is_present_and_valid(self, auth_params: AuthInfoVM) -> bool:
         return (self.refresh_token is not None
             and self.expired_time_token is not None
             and self.expired_time_token > datetime.now()
@@ -26,8 +33,26 @@ class AuthService:
             and self.resource == auth_params.credentials.resource
             and self.grant_type == auth_params.credentials.grantType)
 
-    def get_auth_token(self, auth_params: AuthInfoVM):
-        if self.__auth_token_is_present_and_valid(auth_params):
+    def get_auth_token(self, auth_params: AuthInfoVM) -> str:
+        """Return an access token for the supplied authentication parameters.
+
+        A valid cached token is preferred, followed by a token supplied in
+        ``auth_params``. If neither is available, this method requests a new
+        token using the configured client-credentials or password grant and
+        caches it until it expires.
+
+        Args:
+            auth_params: Authentication settings, credentials, or a
+                pre-existing token.
+
+        Returns:
+            The access token to use for authenticated requests.
+
+        Raises:
+            Exception: If credentials are missing or the token endpoint rejects
+                the request.
+        """
+        if self._auth_token_is_present_and_valid(auth_params):
             return self.refresh_token
         
         if auth_params.tokenProvided:
@@ -57,7 +82,6 @@ class AuthService:
         result = response.json()
 
         if not response.ok:
-            # return (f"Failed to acquire token: {response.text}")
             raise Exception(f"Failed to acquire token: {response.text}")
 
         self.refresh_token = result["access_token"]
