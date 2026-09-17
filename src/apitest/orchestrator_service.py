@@ -7,6 +7,8 @@ from .dynamic_vars_evaluator_service import DynamicVarsEvaluatorService
 from .response_validation_service import ResponseValidationService
 
 class OrchestratorService:
+    """Coordinate API test execution, response validation, and variable storage."""
+
     def __init__(self,
         auth_service: AuthService,
         response_validation_service: ResponseValidationService,
@@ -21,6 +23,22 @@ class OrchestratorService:
         self.secrets = secrets
 
     def validate(self, request: ApiTestRequestVMList):
+        """Execute and validate all API test requests in a request list.
+
+        Authentication, static variables, and dynamic variables are resolved
+        before each HTTP request is sent. Each response is then checked against
+        its expected status and content validations, and any extracted request
+        variables are added to the shared global variables. Processing stops
+        after the first response that fails validation.
+
+        Args:
+            request: Authentication settings, global variables, and API test
+                requests to execute.
+
+        Returns:
+            A list of response models containing execution results and any
+            validation failures, in request order.
+        """
         self.vars_evaluator_service.replace_secrets(self.secrets, request.authenticationParams)
         auth_token = self.auth_service.get_auth_token(request.authenticationParams)
 
@@ -71,6 +89,9 @@ class OrchestratorService:
             
             api_test_response.isValidationSuccess = api_test_response.failedValidations == []
             responses.append(api_test_response)
+
+            if not api_test_response.isValidationSuccess:
+                break
 
         return responses
     

@@ -74,3 +74,52 @@ def test_validate_returns_successful_response_for_happy_path(mock_request: Magic
     assert responses[0].failedValidations == []
     assert responses[0].isValidationSuccess is True
     assert request_list.globalVariables == {"environment": "test", "userId": 42}
+
+@patch("apitest.orchestrator_service.requests.request")
+def test_validate_stops_after_first_failed_response(mock_request: MagicMock) -> None:
+    auth_service = create_autospec(AuthService, instance=True)
+    response_validation_service = create_autospec(ResponseValidationService, instance=True)
+    vars_evaluator_service = create_autospec(VariablesEvaluatorService, instance=True)
+    dynamic_vars_evaluator_service = create_autospec(DynamicVarsEvaluatorService, instance=True)
+    authentication = AuthInfoVM(type=AuthMethod.BEARER, tokenProvided="provided-token")
+    request_list = ApiTestRequestVMList(
+        authenticationParams=authentication,
+        apiTestRequests=[
+            ApiTestRequestVM(
+                id="failing-request",
+                url="https://api.example.test/failing",
+                method="GET",
+                expectedResponse=ExpectedResponseVM(status=200),
+            ),
+            ApiTestRequestVM(
+                id="skipped-request",
+                url="https://api.example.test/skipped",
+                method="GET",
+                expectedResponse=ExpectedResponseVM(status=200),
+            ),
+        ],
+        globalVariables={},
+    )
+
+    auth_service.get_auth_token.return_value = "access-token"
+    vars_evaluator_service.resolve_request_variables.return_value = ({}, [])
+    response_validation_service.validate_response.return_value = [MagicMock()]
+    http_response = MagicMock()
+    http_response.status_code = 200
+    http_response.headers = {}
+    http_response.text = "response"
+    mock_request.return_value = http_response
+
+    orchestrator = OrchestratorService(
+        auth_service,
+        response_validation_service,
+        vars_evaluator_service,
+        dynamic_vars_evaluator_service,
+        {},
+    )
+    responses = orchestrator.validate(request_list)
+
+    assert len(responses) == 1
+    assert responses[0].requestId == "failing-request"
+    assert responses[0].isValidationSuccess is False
+    mock_request.assert_called_once()
