@@ -20,10 +20,10 @@ class DynamicVarsEvaluatorService:
         if isinstance(value, list):
             return [self.replace_dynamic_variables(item) for item in value]
         if isinstance(value, str) and value.startswith("{{"):
-            return self.resolve_dynamic_value(value)
+            return self._resolve_dynamic_value(value)
         return value
 
-    def resolve_dynamic_value(self, value: str | None) -> str | None:
+    def _resolve_dynamic_value(self, value: str | None) -> str | None:
         if not value:
             return value
 
