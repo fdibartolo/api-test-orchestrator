@@ -1,7 +1,7 @@
-import re
 import random
+import re
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 _DEFAULT_DATE_FORMAT = "%Y-%m-%d"
@@ -47,7 +47,7 @@ class DynamicVarsEvaluatorService:
         if not value:
             return value
 
-        utc_now = datetime.now(timezone.utc)
+        utc_now = datetime.now(UTC)
         today_match = _DYNAMIC_TODAY_PATTERN.search(value)
         if today_match:
             date_format = today_match.group(1) or _DEFAULT_DATE_FORMAT

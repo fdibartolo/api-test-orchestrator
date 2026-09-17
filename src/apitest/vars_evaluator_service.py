@@ -1,7 +1,10 @@
 import json
 import re
 from typing import Any
+
+from jsonpath_ng.exceptions import JsonPathParserError
 from jsonpath_ng.ext import parse as jsonpath_parse
+
 from models.apitestify_requests import ApiTestRequestVM, AuthInfoVM
 from models.apitestify_responses import ApiTestResponseVM, FailedValidationVM
 
@@ -128,7 +131,7 @@ class VariablesEvaluatorService:
                         message=f"JsonPath '{json_path}' did not find any value for variable '{key}'.",
                     )
                 )
-            except Exception as ex:
+            except JsonPathParserError as ex:
                 failed_validations.append(
                     FailedValidationVM(
                         key=key,

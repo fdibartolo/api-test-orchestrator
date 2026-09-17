@@ -1,4 +1,5 @@
 import pytest
+
 from apitest.vars_evaluator_service import VariablesEvaluatorService
 from models.apitestify_requests import (
     ApiTestRequestVM,

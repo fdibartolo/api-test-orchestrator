@@ -1,5 +1,7 @@
-import pytest
 import re
+
+import pytest
+
 from apitest.dynamic_vars_evaluator_service import DynamicVarsEvaluatorService
 
 

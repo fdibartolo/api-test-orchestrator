@@ -1,6 +1,9 @@
 from http import HTTPStatus
 from typing import Any
+
+from jsonpath_ng.exceptions import JsonPathParserError
 from jsonpath_ng.ext import parse as jsonpath_parse
+
 from models.apitestify_requests import ResponseValidationVM
 from models.apitestify_responses import ApiTestResponseVM, FailedValidationVM
 
@@ -40,7 +43,7 @@ class ResponseValidationService:
         for key, validation in content_validations.items():
             try:
                 token = self._select_token(json_content, key)
-            except Exception as ex:
+            except JsonPathParserError as ex:
                 result.append(
                     FailedValidationVM(
                         key=key,

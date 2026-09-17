@@ -1,5 +1,7 @@
+from datetime import UTC, datetime, timedelta
+
 import requests
-from datetime import datetime, timedelta
+
 from models.apitestify_requests import AuthInfoVM, GrantType
 
 
@@ -26,7 +28,7 @@ class AuthService:
         return (
             self.refresh_token is not None
             and self.expired_time_token is not None
-            and self.expired_time_token > datetime.now()
+            and self.expired_time_token > datetime.now(UTC)
             and self.client_id == auth_params.credentials.clientId
             and self.client_secret == auth_params.credentials.clientSecret
             and self.user == auth_params.credentials.user
@@ -62,7 +64,7 @@ class AuthService:
             return auth_params.tokenProvided
 
         if auth_params.credentials is None:
-            raise Exception(f"Failed to acquire token: missing credentials")
+            raise ConnectionError("Failed to acquire token: missing credentials")
 
         if auth_params.credentials.grantType == GrantType.CLIENT_CREDENTIALS:
             data = {
@@ -85,10 +87,10 @@ class AuthService:
         result = response.json()
 
         if not response.ok:
-            raise Exception(f"Failed to acquire token: {response.text}")
+            raise ConnectionError(f"Failed to acquire token: {response.text}")
 
         self.refresh_token = result["access_token"]
-        self.expired_time_token = datetime.now() + timedelta(
+        self.expired_time_token = datetime.now(UTC) + timedelta(
             seconds=result["expires_in"]
         )
         self.client_id = auth_params.credentials.clientId

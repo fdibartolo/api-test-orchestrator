@@ -1,6 +1,8 @@
-import pytest
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from apitest.auth_service import AuthService
 from models.apitestify_requests import (
     AuthInfoVM,
@@ -56,7 +58,7 @@ def test_get_auth_token_raises_when_credentials_missing() -> None:
     auth_service = AuthService()
     auth_info = AuthInfoVM(type=AuthMethod.BEARER, credentials=None, tokenProvided=None)
 
-    with pytest.raises(Exception, match="Failed to acquire token: missing credentials"):
+    with pytest.raises(ConnectionError, match="Failed to acquire token: missing credentials"):
         auth_service.get_auth_token(auth_info)
 
 
@@ -125,7 +127,7 @@ def test_get_auth_token_reuses_cached_valid_token(
 ) -> None:
     auth_service = AuthService()
     auth_service.refresh_token = "cached-valid-token"
-    auth_service.expired_time_token = datetime.now() + timedelta(seconds=600)
+    auth_service.expired_time_token = datetime.now(UTC) + timedelta(seconds=600)
     auth_service.client_id = "client-123"
     auth_service.client_secret = "secret-456"
     auth_service.user = "user@example.com"
@@ -146,7 +148,7 @@ def test_get_auth_token_fetches_new_token_when_cached_token_expired(
 ) -> None:
     auth_service = AuthService()
     auth_service.refresh_token = "expired-token"
-    auth_service.expired_time_token = datetime.now() - timedelta(seconds=10)
+    auth_service.expired_time_token = datetime.now(UTC) - timedelta(seconds=10)
     auth_service.client_id = "client-123"
     auth_service.client_secret = "secret-456"
     auth_service.user = "user@example.com"
@@ -179,5 +181,5 @@ def test_get_auth_token_http_error_raises_exception(
     mock_response.text = "Unauthorized client"
     mock_post.return_value = mock_response
 
-    with pytest.raises(Exception, match="Failed to acquire token: Unauthorized client"):
+    with pytest.raises(ConnectionError, match="Failed to acquire token: Unauthorized client"):
         auth_service.get_auth_token(client_credentials_auth_info)

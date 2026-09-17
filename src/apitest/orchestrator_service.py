@@ -1,10 +1,12 @@
 import requests
+
 from models.apitestify_requests import ApiTestRequestVMList
 from models.apitestify_responses import ApiTestResponseVM
+
 from .auth_service import AuthService
-from .vars_evaluator_service import VariablesEvaluatorService
 from .dynamic_vars_evaluator_service import DynamicVarsEvaluatorService
 from .response_validation_service import ResponseValidationService
+from .vars_evaluator_service import VariablesEvaluatorService
 
 
 class OrchestratorService:

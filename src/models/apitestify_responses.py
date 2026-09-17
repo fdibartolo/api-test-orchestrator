@@ -1,4 +1,5 @@
 from typing import Any
+
 from pydantic import BaseModel, Field, model_validator
 
 
@@ -10,7 +11,7 @@ class FailedValidationVM(BaseModel):
     message: str | None = None
 
     @model_validator(mode="after")
-    def set_default_message(self) -> "FailedValidationVM":
+    def set_default_message(self) -> FailedValidationVM:
         if self.message is None:
             self.message = (
                 f"Validation failed for '{self.key}'. "
