@@ -1,6 +1,7 @@
 from typing import Any
 from pydantic import BaseModel, Field, model_validator
 
+
 class FailedValidationVM(BaseModel):
     key: str
     type: str
@@ -17,6 +18,7 @@ class FailedValidationVM(BaseModel):
             )
         return self
 
+
 class ApiTestResponseVM(BaseModel):
     requestId: str
     isValidationSuccess: bool | None = None
@@ -32,6 +34,6 @@ class ApiTestResponseVM(BaseModel):
             type="equals",
             expectedValue=f"{expected}",
             actualValue=f"{actual}",
-            message=f"Expected status code: {expected}, but received: {actual}"
+            message=f"Expected status code: {expected}, but received: {actual}",
         )
         self.failedValidations.append(failure)

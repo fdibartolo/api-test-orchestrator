@@ -6,15 +6,17 @@ from .vars_evaluator_service import VariablesEvaluatorService
 from .dynamic_vars_evaluator_service import DynamicVarsEvaluatorService
 from .response_validation_service import ResponseValidationService
 
+
 class OrchestratorService:
     """Coordinate API test execution, response validation, and variable storage."""
 
-    def __init__(self,
+    def __init__(
+        self,
         auth_service: AuthService,
         response_validation_service: ResponseValidationService,
         variables_evaluator_service: VariablesEvaluatorService,
         dynamic_vars_evaluator_service: DynamicVarsEvaluatorService,
-        secrets: dict[str, str]
+        secrets: dict[str, str],
     ):
         self.auth_service = auth_service
         self.response_validation_service = response_validation_service
@@ -39,24 +41,36 @@ class OrchestratorService:
             A list of response models containing execution results and any
             validation failures, in request order.
         """
-        self.vars_evaluator_service.replace_secrets(self.secrets, request.authenticationParams)
+        self.vars_evaluator_service.replace_secrets(
+            self.secrets, request.authenticationParams
+        )
         auth_token = self.auth_service.get_auth_token(request.authenticationParams)
 
         responses = []
         for api_test_request in request.apiTestRequests:
-            self.vars_evaluator_service.replace_variables(request.globalVariables, api_test_request)
+            self.vars_evaluator_service.replace_variables(
+                request.globalVariables, api_test_request
+            )
 
-            api_test_request.jsonBody = self.dynamic_vars_evaluator_service.replace_dynamic_variables(
-                api_test_request.jsonBody
+            api_test_request.jsonBody = (
+                self.dynamic_vars_evaluator_service.replace_dynamic_variables(
+                    api_test_request.jsonBody
+                )
             )
-            api_test_request.queryParams = self.dynamic_vars_evaluator_service.replace_dynamic_variables(
-                api_test_request.queryParams
+            api_test_request.queryParams = (
+                self.dynamic_vars_evaluator_service.replace_dynamic_variables(
+                    api_test_request.queryParams
+                )
             )
-            
+
             request_auth_token = auth_token
             if api_test_request.authenticationParams is not None:
-                self.vars_evaluator_service.replace_secrets(self.secrets, api_test_request.authenticationParams)
-                request_auth_token = self.auth_service.get_auth_token(api_test_request.authenticationParams)
+                self.vars_evaluator_service.replace_secrets(
+                    self.secrets, api_test_request.authenticationParams
+                )
+                request_auth_token = self.auth_service.get_auth_token(
+                    api_test_request.authenticationParams
+                )
 
             kwargs = api_test_request.build_request_kwargs(request_auth_token)
             response = requests.request(**kwargs)
@@ -64,34 +78,41 @@ class OrchestratorService:
             api_test_response = ApiTestResponseVM(
                 requestId=api_test_request.id,
                 status=response.status_code,
-                originalResponse=response.json() if "application/json" in (response.headers.get("Content-Type") or "") else response.text,
+                originalResponse=response.json()
+                if "application/json" in (response.headers.get("Content-Type") or "")
+                else response.text,
                 originalRequest={
                     "url": api_test_request.url,
                     "jsonBody": api_test_request.jsonBody,
-                }
+                },
             )
 
             if api_test_request.expectedResponse.status != response.status_code:
-                api_test_response.add_failure_for_status_code(api_test_request.expectedResponse.status, response.status_code)
+                api_test_response.add_failure_for_status_code(
+                    api_test_request.expectedResponse.status, response.status_code
+                )
 
             failed_validations = self.response_validation_service.validate_response(
-                api_test_request.expectedResponse.contentValidations,
-                api_test_response
+                api_test_request.expectedResponse.contentValidations, api_test_response
             )
             api_test_response.failedValidations += failed_validations
 
-            request_variables, failures = self.vars_evaluator_service.resolve_request_variables(
-                api_test_request.variables, api_test_response)
+            request_variables, failures = (
+                self.vars_evaluator_service.resolve_request_variables(
+                    api_test_request.variables, api_test_response
+                )
+            )
             api_test_response.storedVariables = request_variables
             api_test_response.failedValidations += failures
 
             request.globalVariables.update(request_variables)
-            
-            api_test_response.isValidationSuccess = api_test_response.failedValidations == []
+
+            api_test_response.isValidationSuccess = (
+                api_test_response.failedValidations == []
+            )
             responses.append(api_test_response)
 
             if not api_test_response.isValidationSuccess:
                 break
 
         return responses
-    

@@ -15,15 +15,16 @@ vars_evaluator_service = VariablesEvaluatorService()
 dynamic_vars_evaluator_service = DynamicVarsEvaluatorService()
 secrets = {
     "G_CTWR-Secrets-Env-AzureAD_ClientSecret": os.getenv("AZURE_AD_CLIENT_SECRET"),
-    "G_CTWR-Secrets-Env-TestId_Password": os.getenv("TEST_ID_PASSWORD")
+    "G_CTWR-Secrets-Env-TestId_Password": os.getenv("TEST_ID_PASSWORD"),
 }
 orchestrator_service = OrchestratorService(
     auth_service,
     response_validation_service,
     vars_evaluator_service,
     dynamic_vars_evaluator_service,
-    secrets
+    secrets,
 )
+
 
 @router.post(
     "/validate",

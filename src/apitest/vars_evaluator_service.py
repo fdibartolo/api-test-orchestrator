@@ -7,6 +7,7 @@ from models.apitestify_responses import ApiTestResponseVM, FailedValidationVM
 
 _VARIABLE_PATTERN = re.compile(r"#\{(.+?)\}#")
 
+
 class VariablesEvaluatorService:
     """Resolve secret and request variables used during API test execution."""
 
@@ -21,12 +22,16 @@ class VariablesEvaluatorService:
             auth_info: Authentication information whose credentials are updated.
         """
         auth_info.credentials.clientSecret = self._replace_value(
-            auth_info.credentials.clientSecret, variables)
+            auth_info.credentials.clientSecret, variables
+        )
 
         auth_info.credentials.password = self._replace_value(
-            auth_info.credentials.password, variables)
+            auth_info.credentials.password, variables
+        )
 
-    def replace_variables(self, variables: dict[str, str], api_test_request: ApiTestRequestVM) -> None:
+    def replace_variables(
+        self, variables: dict[str, str], api_test_request: ApiTestRequestVM
+    ) -> None:
         """Replace request-variable placeholders throughout an API test request.
 
         URL components, request bodies, variables, and response validations are
@@ -42,15 +47,24 @@ class VariablesEvaluatorService:
         for section in ("headers", "cookies", "queryParams", "variables"):
             values = getattr(api_test_request, section)
             if values is not None:
-                setattr(api_test_request, section, {
-                    key: self._replace_value(value, variables) for key, value in values.items()
-                })
+                setattr(
+                    api_test_request,
+                    section,
+                    {
+                        key: self._replace_value(value, variables)
+                        for key, value in values.items()
+                    },
+                )
 
         api_test_request.url = self._replace_value(api_test_request.url, variables)
 
         if api_test_request.jsonBody is not None:
-            serialized_body = json.dumps(api_test_request.jsonBody, separators=(",", ":"))
-            api_test_request.jsonBody = json.loads(self._replace_value(serialized_body, variables))
+            serialized_body = json.dumps(
+                api_test_request.jsonBody, separators=(",", ":")
+            )
+            api_test_request.jsonBody = json.loads(
+                self._replace_value(serialized_body, variables)
+            )
 
         validations = api_test_request.expectedResponse.contentValidations
         if validations is not None:
@@ -59,7 +73,9 @@ class VariablesEvaluatorService:
                 if isinstance(validation.value, str):
                     validation.value = self._replace_value(validation.value, variables)
                 if validation.errorMessage:
-                    validation.errorMessage = self._replace_value(validation.errorMessage, variables)
+                    validation.errorMessage = self._replace_value(
+                        validation.errorMessage, variables
+                    )
                 updated_key = self._replace_value(key, variables)
                 updated_validations[updated_key] = validation
             api_test_request.expectedResponse.contentValidations = updated_validations
@@ -67,9 +83,13 @@ class VariablesEvaluatorService:
     def _replace_value(self, value: Any, variables: dict[str, str]) -> Any:
         if not isinstance(value, str):
             return value
-        return _VARIABLE_PATTERN.sub(lambda match: variables.get(match.group(1), match.group(0)), value)
+        return _VARIABLE_PATTERN.sub(
+            lambda match: variables.get(match.group(1), match.group(0)), value
+        )
 
-    def resolve_request_variables(self, variables: dict[str, str], response: ApiTestResponseVM) -> tuple[dict[str, Any], list[FailedValidationVM]]:
+    def resolve_request_variables(
+        self, variables: dict[str, str], response: ApiTestResponseVM
+    ) -> tuple[dict[str, Any], list[FailedValidationVM]]:
         """Resolve variables from an API response using JSONPath expressions.
 
         Args:
@@ -99,20 +119,24 @@ class VariablesEvaluatorService:
                     variables_resolved[key] = matches[0].value
                     continue
 
-                failed_validations.append(FailedValidationVM(
-                    key=key,
-                    type="SelectToken",
-                    expectedValue=json_path,
-                    actualValue=None,
-                    message=f"JsonPath '{json_path}' did not find any value for variable '{key}'."
-                ))
+                failed_validations.append(
+                    FailedValidationVM(
+                        key=key,
+                        type="SelectToken",
+                        expectedValue=json_path,
+                        actualValue=None,
+                        message=f"JsonPath '{json_path}' did not find any value for variable '{key}'.",
+                    )
+                )
             except Exception as ex:
-                failed_validations.append(FailedValidationVM(
-                    key=key,
-                    type="SelectToken",
-                    expectedValue=json_path,
-                    actualValue=None,
-                    message=f"Error processing variable '{key}' with JsonPath '{json_path}': {ex}"
-                ))
+                failed_validations.append(
+                    FailedValidationVM(
+                        key=key,
+                        type="SelectToken",
+                        expectedValue=json_path,
+                        actualValue=None,
+                        message=f"Error processing variable '{key}' with JsonPath '{json_path}': {ex}",
+                    )
+                )
 
         return variables_resolved, failed_validations

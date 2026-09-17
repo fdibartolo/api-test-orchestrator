@@ -2,14 +2,17 @@ from enum import Enum
 from typing import Any
 from pydantic import BaseModel
 
+
 class AuthMethod(str, Enum):
     ANONYMOUS = "Anonymous"
     BASIC = "Basic"
     BEARER = "Bearer"
 
+
 class GrantType(str, Enum):
     CLIENT_CREDENTIALS = "client_credentials"
     PASSWORD = "password"
+
 
 class HttpTokenParameter(BaseModel):
     grantType: GrantType
@@ -21,19 +24,23 @@ class HttpTokenParameter(BaseModel):
     user: str
     password: str
 
+
 class AuthInfoVM(BaseModel):
     type: AuthMethod
     credentials: HttpTokenParameter | None = None
     tokenProvided: str | None = None
+
 
 class ResponseValidationVM(BaseModel):
     type: str
     value: Any | None = None
     errorMessage: str | None = None
 
+
 class ExpectedResponseVM(BaseModel):
     status: int = 200
     contentValidations: dict[str, ResponseValidationVM] | None = None
+
 
 class ApiTestRequestVM(BaseModel):
     id: str
@@ -63,6 +70,7 @@ class ApiTestRequestVM(BaseModel):
             "params": self.queryParams,
             "json": self.jsonBody,
         }
+
 
 class ApiTestRequestVMList(BaseModel):
     authenticationParams: AuthInfoVM | None = None

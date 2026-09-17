@@ -8,10 +8,13 @@ _DEFAULT_DATE_FORMAT = "%Y-%m-%d"
 _DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%SZ"
 _DYNAMIC_TODAY_PATTERN = re.compile(r"\{\{DynamicToday\}\}(?::([^:{}]+))?")
 _DYNAMIC_NOW_PATTERN = re.compile(r"\{\{DynamicNow\}\}(?::([^:{}]+))?")
-_DYNAMIC_FUTURE_PATTERN = re.compile(r"\{\{DynamicFuture\}\}:(\d+)([dhm])(?::([^:{}]+))?")
+_DYNAMIC_FUTURE_PATTERN = re.compile(
+    r"\{\{DynamicFuture\}\}:(\d+)([dhm])(?::([^:{}]+))?"
+)
 _DYNAMIC_PAST_PATTERN = re.compile(r"\{\{DynamicPast\}\}:(\d+)([dhm])(?::([^:{}]+))?")
 _DYNAMIC_RANDOM_NUMBER_PATTERN = re.compile(r"\{\{DynamicRandomNumber\}\}:(\d+)")
 _DYNAMIC_RANDOM_GUID_PATTERN = re.compile(r"\{\{DynamicRandomGuid\}\}")
+
 
 class DynamicVarsEvaluatorService:
     """Resolve dynamic date, time, number, and GUID variables in values."""
@@ -31,7 +34,9 @@ class DynamicVarsEvaluatorService:
             The value with supported dynamic variables replaced.
         """
         if isinstance(value, dict):
-            return {key: self.replace_dynamic_variables(item) for key, item in value.items()}
+            return {
+                key: self.replace_dynamic_variables(item) for key, item in value.items()
+            }
         if isinstance(value, list):
             return [self.replace_dynamic_variables(item) for item in value]
         if isinstance(value, str) and value.startswith("{{"):
@@ -59,7 +64,10 @@ class DynamicVarsEvaluatorService:
                 self._format_dynamic_datetime(utc_now, date_format),
             )
 
-        for pattern, sign in ((_DYNAMIC_FUTURE_PATTERN, 1), (_DYNAMIC_PAST_PATTERN, -1)):
+        for pattern, sign in (
+            (_DYNAMIC_FUTURE_PATTERN, 1),
+            (_DYNAMIC_PAST_PATTERN, -1),
+        ):
             date_match = pattern.search(value)
             if date_match:
                 amount = int(date_match.group(1)) * sign
@@ -79,7 +87,7 @@ class DynamicVarsEvaluatorService:
         if random_number_match:
             digits = int(random_number_match.group(1))
             minimum = 10 ** (digits - 1)
-            maximum = 10 ** digits - 1
+            maximum = 10**digits - 1
             return str(random.randint(minimum, maximum))
 
         if _DYNAMIC_RANDOM_GUID_PATTERN.search(value):

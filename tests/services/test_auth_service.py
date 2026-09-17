@@ -2,7 +2,13 @@ import pytest
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 from apitest.auth_service import AuthService
-from models.apitestify_requests import AuthInfoVM, AuthMethod, GrantType, HttpTokenParameter
+from models.apitestify_requests import (
+    AuthInfoVM,
+    AuthMethod,
+    GrantType,
+    HttpTokenParameter,
+)
+
 
 @pytest.fixture
 def client_credentials_auth_info() -> AuthInfoVM:
@@ -20,6 +26,7 @@ def client_credentials_auth_info() -> AuthInfoVM:
         ),
     )
 
+
 @pytest.fixture
 def password_auth_info() -> AuthInfoVM:
     return AuthInfoVM(
@@ -36,12 +43,14 @@ def password_auth_info() -> AuthInfoVM:
         ),
     )
 
+
 def test_get_auth_token_returns_provided_token() -> None:
     auth_service = AuthService()
     auth_info = AuthInfoVM(type=AuthMethod.BEARER, tokenProvided="pre-existing-token")
-    
+
     token = auth_service.get_auth_token(auth_info)
     assert token == "pre-existing-token"
+
 
 def test_get_auth_token_raises_when_credentials_missing() -> None:
     auth_service = AuthService()
@@ -49,6 +58,7 @@ def test_get_auth_token_raises_when_credentials_missing() -> None:
 
     with pytest.raises(Exception, match="Failed to acquire token: missing credentials"):
         auth_service.get_auth_token(auth_info)
+
 
 @patch("apitest.auth_service.requests.post")
 def test_get_auth_token_client_credentials_success(
@@ -79,6 +89,7 @@ def test_get_auth_token_client_credentials_success(
     assert auth_service.client_id == "client-123"
     assert auth_service.client_secret == "secret-456"
 
+
 @patch("apitest.auth_service.requests.post")
 def test_get_auth_token_password_grant_success(
     mock_post: MagicMock, password_auth_info: AuthInfoVM
@@ -107,6 +118,7 @@ def test_get_auth_token_password_grant_success(
         },
     )
 
+
 @patch("apitest.auth_service.requests.post")
 def test_get_auth_token_reuses_cached_valid_token(
     mock_post: MagicMock, client_credentials_auth_info: AuthInfoVM
@@ -126,6 +138,7 @@ def test_get_auth_token_reuses_cached_valid_token(
 
     assert token == "cached-valid-token"
     mock_post.assert_not_called()
+
 
 @patch("apitest.auth_service.requests.post")
 def test_get_auth_token_fetches_new_token_when_cached_token_expired(
@@ -154,6 +167,7 @@ def test_get_auth_token_fetches_new_token_when_cached_token_expired(
 
     assert token == "fresh-token"
     mock_post.assert_called_once()
+
 
 @patch("apitest.auth_service.requests.post")
 def test_get_auth_token_http_error_raises_exception(

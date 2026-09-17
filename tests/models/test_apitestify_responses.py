@@ -1,5 +1,6 @@
 from models.apitestify_responses import ApiTestResponseVM, FailedValidationVM
 
+
 def test_failed_validation_default_message_when_not_set() -> None:
     failure = FailedValidationVM(
         key="Header.Content-Type",
@@ -13,6 +14,7 @@ def test_failed_validation_default_message_when_not_set() -> None:
     )
     assert failure.message == expected_msg
 
+
 def test_failed_validation_custom_message_preserved() -> None:
     custom_msg = "Custom validation error"
     failure = FailedValidationVM(
@@ -23,6 +25,7 @@ def test_failed_validation_custom_message_preserved() -> None:
         message=custom_msg,
     )
     assert failure.message == custom_msg
+
 
 def test_add_failure_for_status_code_appends_failed_validation() -> None:
     response = ApiTestResponseVM(
@@ -43,6 +46,7 @@ def test_add_failure_for_status_code_appends_failed_validation() -> None:
     assert failure.expectedValue == "200"
     assert failure.actualValue == "404"
     assert failure.message == "Expected status code: 200, but received: 404"
+
 
 def test_add_failure_for_status_code_appends_to_existing_failures() -> None:
     existing_failure = FailedValidationVM(
