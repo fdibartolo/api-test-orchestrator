@@ -106,8 +106,8 @@ def test_validate_stops_after_first_failed_response(mock_request: MagicMock) -> 
     response_validation_service.validate_response.return_value = [MagicMock()]
     http_response = MagicMock()
     http_response.status_code = 200
-    http_response.headers = {}
-    http_response.text = "response"
+    http_response.headers = {"Content-Type": "application/json"}
+    http_response.json.return_value = {"status": "failed"}
     mock_request.return_value = http_response
 
     orchestrator = OrchestratorService(
