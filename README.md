@@ -1,7 +1,7 @@
 # API Test Orchestrator
 
 [![CI](https://github.com/fdibartolo/api-test-orchestrator/actions/workflows/ci.yml/badge.svg)](https://github.com/fdibartolo/api-test-orchestrator/actions/workflows/ci.yml)
-
+[![codecov](https://codecov.io/github/fdibartolo/api-test-orchestrator/graph/badge.svg?token=MK8W5643TU)](https://codecov.io/github/fdibartolo/api-test-orchestrator)
 
 __API Test Orchestrator__ is a small Python/FastAPI middleware for executing API test requests and validating their responses. It can:
 
