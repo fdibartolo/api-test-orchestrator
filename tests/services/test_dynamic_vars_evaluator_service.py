@@ -19,6 +19,13 @@ def test_replace_dynamic_variables_replaces_custom_datetime_format() -> None:
     assert re.fullmatch(r"at=\d{2}-\d{2}-\d{2}", result)
 
 
+def test_replace_dynamic_variables_preserves_literal_format_text() -> None:
+    result = DynamicVarsEvaluatorService()._resolve_dynamic_value(
+        "at={{DynamicNow}}:yyyy/MM/dd'T'HH-mm-ss"
+    )
+    assert re.fullmatch(r"at=\d{4}/\d{2}/\d{2}'T'\d{2}-\d{2}-\d{2}", result)
+
+
 @pytest.mark.parametrize("token", ["DynamicFuture", "DynamicPast"])
 def test_replace_dynamic_variables_replaces_relative_datetime(token: str) -> None:
     result = DynamicVarsEvaluatorService()._resolve_dynamic_value(

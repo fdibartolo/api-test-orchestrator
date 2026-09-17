@@ -6,6 +6,18 @@ from typing import Any
 
 _DEFAULT_DATE_FORMAT = "%Y-%m-%d"
 _DEFAULT_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%SZ"
+_FORMAT_TOKENS = {
+    "yyyy": "%Y",
+    "yy": "%y",
+    "MM": "%m",
+    "dd": "%d",
+    "HH": "%H",
+    "mm": "%M",
+    "ss": "%S",
+}
+_FORMAT_TOKEN_PATTERN = re.compile(
+    "|".join(sorted(_FORMAT_TOKENS, key=len, reverse=True))
+)
 _DYNAMIC_TODAY_PATTERN = re.compile(r"\{\{DynamicToday\}\}(?::([^:{}]+))?")
 _DYNAMIC_NOW_PATTERN = re.compile(r"\{\{DynamicNow\}\}(?::([^:{}]+))?")
 _DYNAMIC_FUTURE_PATTERN = re.compile(
@@ -39,7 +51,7 @@ class DynamicVarsEvaluatorService:
             }
         if isinstance(value, list):
             return [self.replace_dynamic_variables(item) for item in value]
-        if isinstance(value, str):
+        if isinstance(value, str) and "{{" in value:
             return self._resolve_dynamic_value(value)
         return value
 
@@ -106,16 +118,7 @@ class DynamicVarsEvaluatorService:
         if date_format == _DEFAULT_DATE_FORMAT:
             return value.strftime(_DEFAULT_DATE_FORMAT)
 
-        python_format = date_format
-        replacements = (
-            ("yyyy", "%Y"),
-            ("yy", "%y"),
-            ("MM", "%m"),
-            ("dd", "%d"),
-            ("HH", "%H"),
-            ("mm", "%M"),
-            ("ss", "%S"),
-        )
-        for input_token, python_token in replacements:
-            python_format = python_format.replace(input_token, python_token)
-        return value.strftime(python_format)
+        def _replace_token(match: re.Match[str]) -> str:
+            return value.strftime(_FORMAT_TOKENS[match.group(0)])
+
+        return _FORMAT_TOKEN_PATTERN.sub(_replace_token, date_format)
