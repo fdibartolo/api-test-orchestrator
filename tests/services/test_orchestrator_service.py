@@ -150,3 +150,45 @@ def test_validate_stops_after_first_failed_response(mock_request: MagicMock) -> 
     assert responses[0].requestId == "failing-request"
     assert responses[0].isValidationSuccess is False
     mock_request.assert_called_once()
+
+
+@patch("apitest.orchestrator_service.requests.request")
+def test_validate_returns_empty_response_for_no_content(
+    mock_request: MagicMock,
+) -> None:
+    """Ensure 204 responses bypass JSON parsing and retain an empty response body."""
+    auth_service = create_autospec(AuthService, instance=True)
+    response_validation_service = create_autospec(
+        ResponseValidationService, instance=True
+    )
+    vars_evaluator_service = create_autospec(VariablesEvaluatorService, instance=True)
+    dynamic_vars_evaluator_service = create_autospec(
+        DynamicVarsEvaluatorService, instance=True
+    )
+    api_request = ApiTestRequestVM(
+        id="delete-user",
+        url="https://api.example.test/users/42",
+        method="DELETE",
+        expectedResponse=ExpectedResponseVM(status=204),
+    )
+    request_list = ApiTestRequestVMList(
+        apiTestRequests=[api_request], globalVariables={}
+    )
+    response_validation_service.validate_response.return_value = []
+    vars_evaluator_service.resolve_request_variables.return_value = ({}, [])
+    http_response = MagicMock()
+    http_response.status_code = 204
+    http_response.headers = {"Content-Type": "application/json"}
+    mock_request.return_value = http_response
+
+    orchestrator = OrchestratorService(
+        auth_service,
+        response_validation_service,
+        vars_evaluator_service,
+        dynamic_vars_evaluator_service,
+        {},
+    )
+    responses = orchestrator.validate(request_list)
+
+    assert responses[0].originalResponse == {}
+    http_response.json.assert_not_called()

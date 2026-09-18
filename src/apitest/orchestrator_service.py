@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import requests
 
 from models.apitestify_requests import ApiTestRequestVMList
@@ -80,12 +82,10 @@ class OrchestratorService:
             api_test_response = ApiTestResponseVM(
                 requestId=api_test_request.id,
                 status=response.status_code,
-                originalResponse=response.json()
-                if "application/json" in (response.headers.get("Content-Type") or "")
-                else response.text,
+                originalResponse=self._get_original_response(response),
                 originalRequest={
                     "url": api_test_request.url,
-                    "jsonBody": api_test_request.jsonBody,
+                    "body": api_test_request.jsonBody,
                 },
             )
 
@@ -118,3 +118,13 @@ class OrchestratorService:
                 break
 
         return responses
+
+    def _get_original_response(self, response: requests.Response):
+        """Return a normalized body representation for an HTTP response."""
+        if response.status_code == HTTPStatus.NO_CONTENT:
+            return {}
+
+        if "application/json" in (response.headers.get("Content-Type") or ""):
+            return response.json()
+
+        return response.text
