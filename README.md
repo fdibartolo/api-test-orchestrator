@@ -121,8 +121,28 @@ curl --request POST \
 - `apiTestRequests`: Requests to execute, in order. Each request needs `id`, `url`, and `method`. It may also include `headers`, `cookies`, `queryParams`, `jsonBody`, `expectedResponse`, and `variables`.
 - `globalVariables`: Required dictionary of values available to every request.
 - `expectedResponse.status`: Expected HTTP status; defaults to `200`.
-- `expectedResponse.contentValidations`: A map of JSONPath expressions to validation rules. Supported types include `equals`, `notequals`, `contains`, `notcontains`, `containsall`, `containspropertywithvalue`, `length`, `notnull`, `null`, `notempty`, `empty`, and `fieldnotexists`.
+- `expectedResponse.contentValidations`: A map of JSONPath expressions to validation rules. Find below the available response validation types.
 - `variables`: Maps a variable name to a JSONPath expression. Values extracted from a response are added to `globalVariables` for subsequent requests.
+
+#### Available response validation types
+
+The validator evaluates each JSONPath rule in `expectedResponse.contentValidations` against the response body. The supported validation types are:
+
+- `fieldnotexists`: if the JSONPath resolves to a value, the validation fails immediately because the field should not exist.
+- `equals`: compares the actual value to the expected value with case-insensitive string comparison when either side is a string.
+- `notequals`: the inverse of `equals`.
+- `contains`: for lists, returns true when any item matches the expected value; for strings, tests whether the expected text is contained within the actual string (case-insensitive).
+- `notcontains`: for lists, returns true when no item matches the expected value; for non-list values, the implementation treats the result as effectively valid.
+- `containsall`: for list-to-list validation, returns true only when every expected item appears somewhere in the actual list.
+- `containspropertywithvalue`: for a list of objects, returns true when at least one item has a property matching the expected name/value pair. The expected payload must be a single-property object such as `{ "status": "active" }`.
+- `length`: checks whether the actual value length equals the expected integer. This works for lists, dictionaries, and strings.
+- `notnull`: succeeds when the value is not `None`.
+- `null`: succeeds when the value is `None`.
+- `notempty`: succeeds when the value is not `None` and its trimmed string representation is not empty.
+- `empty`: succeeds when the value is `None` or its trimmed string representation is empty.
+
+Finally, if a JSONPath is invalid or the expression does not resolve to a token, the validation result is recorded as a `SelectToken` failure rather than a value mismatch. That means malformed paths and missing fields are both surfaced clearly in `failedValidations`.
+
 
 ### Variable substitution
 
