@@ -192,3 +192,47 @@ def test_validate_returns_empty_response_for_no_content(
 
     assert responses[0].originalResponse == {}
     http_response.json.assert_not_called()
+
+
+@patch("apitest.orchestrator_service.sleep")
+@patch("apitest.orchestrator_service.requests.request")
+def test_validate_waits_for_event_propagation_when_configured(
+    mock_request: MagicMock, mock_sleep: MagicMock
+) -> None:
+    auth_service = create_autospec(AuthService, instance=True)
+    response_validation_service = create_autospec(
+        ResponseValidationService, instance=True
+    )
+    vars_evaluator_service = create_autospec(VariablesEvaluatorService, instance=True)
+    dynamic_vars_evaluator_service = create_autospec(
+        DynamicVarsEvaluatorService, instance=True
+    )
+    api_request = ApiTestRequestVM(
+        id="create-user",
+        url="https://api.example.test/users",
+        method="POST",
+        expectedResponse=ExpectedResponseVM(status=201),
+        waitForEventPropagation="3",
+    )
+    request_list = ApiTestRequestVMList(
+        apiTestRequests=[api_request], globalVariables={}
+    )
+    response_validation_service.validate_response.return_value = []
+    vars_evaluator_service.resolve_request_variables.return_value = ({}, [])
+    http_response = MagicMock()
+    http_response.status_code = 201
+    http_response.headers = {"Content-Type": "application/json"}
+    http_response.json.return_value = {"id": 42}
+    mock_request.return_value = http_response
+
+    orchestrator = OrchestratorService(
+        auth_service,
+        response_validation_service,
+        vars_evaluator_service,
+        dynamic_vars_evaluator_service,
+        {},
+    )
+    responses = orchestrator.validate(request_list)
+
+    assert responses[0].isValidationSuccess is True
+    mock_sleep.assert_called_once_with(3.0)

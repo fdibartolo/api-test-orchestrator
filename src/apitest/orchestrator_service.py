@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from time import sleep
 
 import requests
 
@@ -116,6 +117,9 @@ class OrchestratorService:
 
             if not api_test_response.isValidationSuccess:
                 break
+
+            if api_test_request.waitForEventPropagation is not None:
+                sleep(float(api_test_request.waitForEventPropagation))
 
         return responses
 

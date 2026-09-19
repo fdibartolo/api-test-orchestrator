@@ -118,11 +118,12 @@ curl --request POST \
 ### Request fields
 
 - `authenticationParams`: Optional shared authentication. Supported `type` values are `Anonymous`, `Bearer`, and `Basic`. A bearer token can be supplied with `tokenProvided`. Token endpoint authentication uses `credentials` with `grantType` set to `client_credentials` or `password`.
-- `apiTestRequests`: Requests to execute, in order. Each request needs `id`, `url`, and `method`. It may also include `headers`, `cookies`, `queryParams`, `jsonBody`, `expectedResponse`, and `variables`.
+- `apiTestRequests`: Requests to execute, in order. Each request needs `id`, `url`, and `method`. It may also include `headers`, `cookies`, `queryParams`, `jsonBody`, `expectedResponse`, `variables`, and `waitForEventPropagation`.
 - `globalVariables`: Required dictionary of values available to every request.
 - `expectedResponse.status`: Expected HTTP status; defaults to `200`.
 - `expectedResponse.contentValidations`: A map of JSONPath expressions to validation rules. Find below the available response validation types.
 - `variables`: Maps a variable name to a JSONPath expression. Values extracted from a response are added to `globalVariables` for subsequent requests.
+- `waitForEventPropagation`: Optional request-level value, in seconds, that introduces a quick halt after a successful request to give time between requests for event propagation or other asynchronous processing.
 
 #### Available response validation types
 
