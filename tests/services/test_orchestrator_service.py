@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock, create_autospec, patch
 
+import pytest
+
 from apitest.auth_service import AuthService
 from apitest.dynamic_vars_evaluator_service import DynamicVarsEvaluatorService
 from apitest.orchestrator_service import OrchestratorService
@@ -236,3 +238,26 @@ def test_validate_waits_for_event_propagation_when_configured(
 
     assert responses[0].isValidationSuccess is True
     mock_sleep.assert_called_once_with(3.0)
+
+
+def test_get_original_response_parses_json_text_without_json_content_type() -> None:
+    response = MagicMock()
+    response.status_code = 200
+    response.headers = {"Content-Type": "text/plain"}
+    response.text = '{"message": "ok"}'
+
+    orchestrator = OrchestratorService.__new__(OrchestratorService)
+
+    assert orchestrator._get_original_response(response) == {"message": "ok"}
+
+
+def test_get_original_response_raises_for_invalid_json_text() -> None:
+    response = MagicMock()
+    response.status_code = 200
+    response.headers = {"Content-Type": "text/plain"}
+    response.text = "not json"
+
+    orchestrator = OrchestratorService.__new__(OrchestratorService)
+
+    with pytest.raises(ValueError, match="Response body is not valid JSON"):
+        orchestrator._get_original_response(response)

@@ -1,3 +1,4 @@
+import json
 from http import HTTPStatus
 from time import sleep
 
@@ -46,10 +47,13 @@ class OrchestratorService:
             A list of response models containing execution results and any
             validation failures, in request order.
         """
-        self.vars_evaluator_service.replace_secrets(
-            self.secrets, request.authenticationParams
-        )
-        auth_token = self.auth_service.get_auth_token(request.authenticationParams)
+        if request.authenticationParams is not None:
+            self.vars_evaluator_service.replace_secrets(
+                self.secrets, request.authenticationParams
+            )
+            auth_token = self.auth_service.get_auth_token(request.authenticationParams)
+        else:
+            auth_token = None
 
         responses = []
         for api_test_request in request.apiTestRequests:
@@ -124,11 +128,17 @@ class OrchestratorService:
         return responses
 
     def _get_original_response(self, response: requests.Response):
-        """Return a normalized body representation for an HTTP response."""
         if response.status_code == HTTPStatus.NO_CONTENT:
             return {}
 
-        if "application/json" in (response.headers.get("Content-Type") or ""):
+        content_type = response.headers.get("Content-Type") or ""
+        if (
+            "application/json" in content_type
+            or "application/vnd.api+json" in content_type
+        ):
             return response.json()
 
-        return response.text
+        try:
+            return json.loads(response.text)
+        except json.JSONDecodeError as error:
+            raise ValueError("Response body is not valid JSON") from error
