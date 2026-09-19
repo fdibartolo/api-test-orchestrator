@@ -3,7 +3,7 @@
 [![CI](https://github.com/fdibartolo/api-test-orchestrator/actions/workflows/ci.yml/badge.svg)](https://github.com/fdibartolo/api-test-orchestrator/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/github/fdibartolo/api-test-orchestrator/graph/badge.svg?token=MK8W5643TU)](https://codecov.io/github/fdibartolo/api-test-orchestrator)
 
-__API Test Orchestrator__ is a small Python/FastAPI middleware for executing API test requests and validating their responses. It can:
+__API Test Orchestrator__ is a small middleware for executing API test requests and validating their responses. It can:
 
 - Execute one or more HTTP requests in sequence.
 - Apply anonymous, bearer-token, or token-endpoint authentication.
@@ -63,8 +63,6 @@ The API is then available at `http://127.0.0.1:8000`. FastAPI's interactive docu
 
 - `http://127.0.0.1:8000/docs`
 - `http://127.0.0.1:8000/redoc`
-
-The package also defines an `apitest` console command. At present, that command is a basic entry-point smoke check; use Uvicorn to run the HTTP API.
 
 ## How do I use it?
 
