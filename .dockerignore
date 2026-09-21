@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment files (mount secrets at runtime instead)
+.env
+.env.*
+
+# Version control
+.git/
+.gitignore
+
+# Tests & tooling
+tests/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+.github
+
+# Docker itself
+Dockerfile
+.dockerignore
+
+# Editor / OS
+.vscode/
+.idea/
+*.DS_Store
+
+# local files
+cheatsheet.md

@@ -64,6 +64,15 @@ The API is then available at `http://127.0.0.1:8000`. FastAPI's interactive docu
 - `http://127.0.0.1:8000/docs`
 - `http://127.0.0.1:8000/redoc`
 
+### Docker
+
+Build and run the image locally:
+
+```bash
+docker build --tag apitest .
+docker run --rm --publish 8000:8000 --env-file .env apitest
+```
+
 ## How do I use it?
 
 Send a `POST` request to `/validate` with JSON such as:
