@@ -11,6 +11,7 @@ wheels/
 
 # Miscellaneous local files
 cheatsheet.md
+samples/
 
 # Environment variables
 .env
