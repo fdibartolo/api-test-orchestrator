@@ -141,4 +141,8 @@ class OrchestratorService:
         try:
             return json.loads(response.text)
         except json.JSONDecodeError as error:
-            raise ValueError("Response body is not valid JSON") from error
+            return {
+                "error": "Response body is not valid JSON",
+                "text": response.text,
+                "details": str(error),
+            }
