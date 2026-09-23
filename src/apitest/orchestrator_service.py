@@ -136,10 +136,20 @@ class OrchestratorService:
             "application/json" in content_type
             or "application/vnd.api+json" in content_type
         ):
-            return response.json()
+            original_response = response.json()
+            return (
+                original_response
+                if not isinstance(original_response, list)
+                else {"data": original_response}
+            )
 
         try:
-            return json.loads(response.text)
+            original_response = json.loads(response.text)
+            return (
+                original_response
+                if not isinstance(original_response, list)
+                else {"data": original_response}
+            )
         except json.JSONDecodeError as error:
             return {
                 "error": "Response body is not valid JSON",

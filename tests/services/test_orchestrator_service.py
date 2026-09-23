@@ -249,6 +249,32 @@ def test_get_original_response_parses_json_text_without_json_content_type() -> N
     assert orchestrator._get_original_response(response) == {"message": "ok"}
 
 
+def test_get_original_response_wraps_json_list_in_data() -> None:
+    response = MagicMock()
+    response.status_code = 200
+    response.headers = {"Content-Type": "application/json"}
+    response.json.return_value = [{"id": 1}, {"id": 2}]
+
+    orchestrator = OrchestratorService.__new__(OrchestratorService)
+
+    assert orchestrator._get_original_response(response) == {
+        "data": [{"id": 1}, {"id": 2}]
+    }
+
+
+def test_get_original_response_wraps_json_text_list_in_data() -> None:
+    response = MagicMock()
+    response.status_code = 200
+    response.headers = {"Content-Type": "text/plain"}
+    response.text = '[{"id": 1}, {"id": 2}]'
+
+    orchestrator = OrchestratorService.__new__(OrchestratorService)
+
+    assert orchestrator._get_original_response(response) == {
+        "data": [{"id": 1}, {"id": 2}]
+    }
+
+
 def test_get_original_response_returns_error_details_for_invalid_json_text() -> None:
     response = MagicMock()
     response.status_code = 200
