@@ -293,6 +293,12 @@ Separators and other literal characters are passed through to the resulting form
 
 `DynamicRandomNumber` requires a positive digit count, for example `{{DynamicRandomNumber}}:6`. `DynamicRandomGuid` returns a lowercase UUID v4 such as `550e8400-e29b-41d4-a716-446655440000`.
 
+## How do I generate API test samples with AI?
+
+The repository ships an `api-learner` agent definition in `.github/agents/api-learner.agent.md`. In an AI-enabled editor that supports repository agents, invoke `api-learner` and provide an API endpoint URL or an OpenAPI document path. The agent reads the API contract and generates representative `/validate` request samples under `samples/` folder.
+
+The agent instructions are included in this repository for you to use with your own AI subscription. The repository does not provide an AI service, subscription, credentials, or access to the target API. The agent only inspects the OpenAPI document. Review generated samples and replace placeholder values if needed, before running them.
+
 ## How do I run tests?
 
 Run the complete test suite with:
