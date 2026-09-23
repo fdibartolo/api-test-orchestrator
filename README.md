@@ -3,6 +3,23 @@
 [![CI](https://github.com/fdibartolo/api-test-orchestrator/actions/workflows/ci.yml/badge.svg)](https://github.com/fdibartolo/api-test-orchestrator/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/github/fdibartolo/api-test-orchestrator/graph/badge.svg?token=MK8W5643TU)](https://codecov.io/github/fdibartolo/api-test-orchestrator)
 
+- [What is this?](#what-is-this)
+- [How do I install it?](#how-do-i-install-it)
+- [How do I run it?](#how-do-i-run-it)
+  - [Docker](#docker)
+- [How do I use it?](#how-do-i-use-it)
+  - [Request fields](#request-fields)
+  - [Available response validation types](#available-response-validation-types)
+  - [Variable substitution](#variable-substitution)
+    - [Root-level variables](#root-level-variables)
+    - [Request-level variables](#request-level-variables)
+    - [Available dynamic placeholders](#available-dynamic-placeholders)
+    - [Custom date and time formats](#custom-date-and-time-formats)
+- [How do I generate API test samples with AI?](#how-do-i-generate-api-test-samples-with-ai)
+- [How do I run tests?](#how-do-i-run-tests)
+
+## What is this?
+
 __API Test Orchestrator__ is a small middleware for executing API test requests and validating their responses. It can:
 
 - Execute one or more HTTP requests in sequence.
@@ -12,8 +29,6 @@ __API Test Orchestrator__ is a small middleware for executing API test requests 
 - Extract values from a response and make them available to later requests.
 
 Requests are processed in order and execution stops at the first request whose validation fails.
-
-## What is this?
 
 The project exposes a FastAPI endpoint:
 
@@ -128,7 +143,7 @@ curl --request POST \
 - `apiTestRequests`: Requests to execute, in order. Each request needs `id`, `url`, and `method`. It may also include `headers`, `cookies`, `queryParams`, `jsonBody`, `expectedResponse`, `variables`, and `waitForEventPropagation`.
 - `globalVariables`: Required dictionary of values available to every request.
 - `expectedResponse.status`: Expected HTTP status; defaults to `200`.
-- `expectedResponse.contentValidations`: A map of JSONPath expressions to validation rules. Find below the available response validation types.
+- `expectedResponse.contentValidations`: A map of JSONPath expressions to validation rules. Find below the [available response validation types](#available-response-validation-types).
 - `variables`: Maps a variable name to a JSONPath expression. Values extracted from a response are added to `globalVariables` for subsequent requests.
 - `waitForEventPropagation`: Optional request-level value, in seconds, that introduces a quick halt after a successful request to give time between requests for event propagation or other asynchronous processing.
 
