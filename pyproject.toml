@@ -15,6 +15,9 @@ dependencies = [
     "requests>=2.34.2",
 ]
 
+[project.scripts]
+apitest_runner = "runner.apitest_runner:main"
+
 [build-system]
 requires = ["uv_build>=0.12.13,<0.13.0"]
 build-backend = "uv_build"
