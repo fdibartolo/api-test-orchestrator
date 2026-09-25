@@ -1,5 +1,6 @@
 import argparse
 import glob
+import json
 import socket
 from pathlib import Path
 
@@ -125,8 +126,20 @@ def _check_apitest_response(
     failed_requests = [r for r in response if not r.isValidationSuccess]
 
     if failed_requests:
+        # by design, no more than one failed request can be present, so [0] is safe
         return False, failed_requests[0].model_dump_json()
     return True, None
+
+
+def _format_failed_tests(failed_tests: list[tuple[str, str | None]]) -> str:
+    formatted_entries = []
+    for file_path, error_message in failed_tests:
+        try:
+            pretty_error = json.dumps(json.loads(error_message), indent=2)
+        except (TypeError, ValueError):
+            pretty_error = error_message
+        formatted_entries.append(f" ---------- File: {file_path} ----------\n\n{pretty_error}")
+    return "\n\n".join(formatted_entries)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -154,4 +167,4 @@ def main(argv: list[str] | None = None) -> None:
     if not failed_tests:
         print(f"{GREEN} ✓ All tests have passed!{RESET}")
     else:
-        print(f"{RED} ✗ Some tests have failed:\n\n{failed_tests}{RESET}")
+        print(f"{RED} ✗ Some tests have failed:\n\n{_format_failed_tests(failed_tests)}{RESET}")
