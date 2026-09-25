@@ -7,7 +7,6 @@ from models.apitestify_responses import ApiTestResponseVM, FailedValidationVM
 from runner.apitest_runner import (
     _check_apitest_response,
     _create_parser,
-    _find_json_files_recursively,
     _is_port_listening,
     _run_tests,
     _send_json_file_as_request,
@@ -57,21 +56,6 @@ def test_is_port_listening_returns_false_for_closed_port() -> None:
         host, port = listener.getsockname()
 
     assert not _is_port_listening(host, port)
-
-
-def test_find_json_files_recursively_searches_recursively(tmp_path) -> None:
-    nested_directory = tmp_path / "nested"
-    nested_directory.mkdir()
-    first_json = tmp_path / "first.json"
-    second_json = nested_directory / "second.json"
-    ignored_file = nested_directory / "ignored.txt"
-    first_json.write_text("{}", encoding="utf-8")
-    second_json.write_text("{}", encoding="utf-8")
-    ignored_file.write_text("not json", encoding="utf-8")
-
-    result = _find_json_files_recursively(str(tmp_path))
-
-    assert set(result) == {str(first_json), str(second_json)}
 
 
 def test_run_tests_collects_failed_files() -> None:

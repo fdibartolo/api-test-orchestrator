@@ -1,12 +1,11 @@
 import argparse
-import glob
 import socket
-from pathlib import Path
 
 import requests
 from pydantic import TypeAdapter, ValidationError
 
 from models.apitestify_responses import ApiTestResponseVM
+from runner.file_helper import FileHelper
 
 GREEN = "\033[92m"
 YELLOW = "\033[93m"
@@ -44,24 +43,6 @@ def _is_port_listening(
             return True
     except OSError:
         return False
-
-
-def _find_json_files_recursively(dir: str) -> list[str]:
-    return [str(json_file) for json_file in Path(dir).rglob("*.json")]
-
-
-def _is_glob_pattern(path: str) -> bool:
-    return any(char in path for char in ("*", "?", "["))
-
-
-def _resolve_files(path: str) -> list[str] | None:
-    if _is_glob_pattern(path):
-        return sorted(glob.glob(path, recursive=True))
-    if Path(path).is_dir():
-        return _find_json_files_recursively(path)
-    if Path(path).is_file():
-        return [path]
-    return None
 
 
 def _run_tests(
@@ -161,7 +142,7 @@ def main(argv: list[str] | None = None) -> None:
 
     files: list[str] = []
     for path in args.file:
-        resolved = _resolve_files(path)
+        resolved = FileHelper.resolve_files(path)
         if resolved is None:
             print(f"{RED} ✗ '{path}' is not a valid file or directory{RESET}")
             return
