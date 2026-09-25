@@ -1,18 +1,9 @@
 import argparse
-import socket
-
-import requests
-from pydantic import TypeAdapter, ValidationError
 
 from models.apitestify_responses import ApiTestResponseVM
+from runner.constants import GREEN, RED, RESET, YELLOW
 from runner.file_helper import FileHelper
-
-GREEN = "\033[92m"
-YELLOW = "\033[93m"
-RED = "\033[91m"
-RESET = "\033[00m"
-DEFAULT_HOST = "127.0.0.1"
-API_TEST_RESPONSES_ADAPTER = TypeAdapter(list[ApiTestResponseVM])
+from runner.http_helper import HttpHelper
 
 
 def _create_parser() -> argparse.ArgumentParser:
@@ -35,84 +26,15 @@ def _create_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _is_port_listening(
-    host: str = DEFAULT_HOST, port: int = 8000, timeout: float = 1.0
-) -> bool:
-    try:
-        with socket.create_connection((host, port), timeout=timeout):
-            return True
-    except OSError:
-        return False
-
-
 def _run_tests(
     files: list[str], port: int
 ) -> list[tuple[str, str | ApiTestResponseVM]]:
     failed_tests = []
     for file in files:
-        success, error = _send_json_file_as_request(file, port)
+        success, error = HttpHelper.send_json_file_as_request(file, port)
         if not success:
             failed_tests.append((file, error))
     return failed_tests
-
-
-def _send_json_file_as_request(
-    file_path: str, port: int
-) -> tuple[bool, str | ApiTestResponseVM | None]:
-    try:
-        print(
-            f"• Running test suite {YELLOW}{file_path}{RESET}...",
-            end=" ",
-            flush=True,
-        )
-
-        with open(file_path, "r", encoding="utf-8") as file:
-            content = file.read()
-
-        response = requests.post(
-            f"http://{DEFAULT_HOST}:{port}/validate",
-            data=content,
-            headers={"Content-Type": "application/json"},
-        )
-        response.raise_for_status()
-
-        try:
-            response_json = response.json()
-        except ValueError:
-            print(f"{RED}✗ FAILED{RESET}")
-            return False, f"Non-JSON response received for {file_path}"
-
-        try:
-            response_payload = API_TEST_RESPONSES_ADAPTER.validate_python(response_json)
-        except ValidationError as error:
-            print(f"{RED}✗ FAILED{RESET}")
-            return False, f"Invalid ApiTest response for {file_path}: {error}"
-
-        valid, failed_request = _check_apitest_response(response_payload)
-        if not valid:
-            print(f"{RED}✗ FAILED{RESET}")
-            return False, failed_request
-
-        print(f"{GREEN}✓ PASSED{RESET}")
-        return True, None
-
-    except FileNotFoundError as error:
-        print(f"{RED}✗ FAILED{RESET}")
-        return False, f"Error reading {file_path}: {error}"
-    except requests.RequestException as error:
-        print(f"{RED}✗ FAILED{RESET}")
-        return False, f"HTTP request failed for {file_path}: {error}"
-
-
-def _check_apitest_response(
-    response: list[ApiTestResponseVM],
-) -> tuple[bool, ApiTestResponseVM | None]:
-    failed_requests = [r for r in response if not r.isValidationSuccess]
-
-    if failed_requests:
-        # by design, no more than one failed request can be present, so [0] is safe
-        return False, failed_requests[0]
-    return True, None
 
 
 def _format_failed_tests(
@@ -134,7 +56,7 @@ def _format_failed_tests(
 def main(argv: list[str] | None = None) -> None:
     args = _create_parser().parse_args(argv)
 
-    if not _is_port_listening(port=args.port):
+    if not HttpHelper.is_port_listening(port=args.port):
         print(
             f"{RED} ✗ API Test Orchestrator is not listening on port {args.port}\n   Use '--port <PORT>{RED}' to specify a different one{RESET}"
         )
