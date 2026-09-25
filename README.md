@@ -17,6 +17,8 @@
     - [Custom date and time formats](#custom-date-and-time-formats)
 - [How do I generate API test samples with AI?](#how-do-i-generate-api-test-samples-with-ai)
 - [How do I run tests?](#how-do-i-run-tests)
+	- [API test runner](#api-test-runner)
+- [Development](#development)
 
 ## What is this?
 
@@ -316,13 +318,53 @@ The agent instructions are included in this repository for you to use with your 
 
 ## How do I run tests?
 
-Run the complete test suite with:
+### API test runner
+
+The solution also ships with the `apitest_runner` tool, which is a cli command that gives the user the possibility to run API Test script files. This is a complementary tool, with the advantage to run the entire suite, instead of running one by one in Postman, or similar. 
+
+Start the API Test Orchestrator first, then run it via:
+
+```bash
+uv run apitest_runner
+```
+
+With no arguments, the runner searches the current directory recursively for JSON files. Use `--file` (or `-f`) to select one or more files, directories, or wildcard patterns:
+
+```bash
+# Run one test file
+uv run apitest_runner --file samples/petstore-get-pet.json
+
+# Run every JSON test file under a directory
+uv run apitest_runner --file samples/
+
+# Run files matching a wildcard
+uv run apitest_runner --file samples/petstore-*.json
+
+# Combine multiple selectors
+uv run apitest_runner --file samples/dogapi-list-breeds.json samples/fakestore/
+```
+
+The runner defaults to port `8000`. If the API Test Orchestrator is listening on a different port, provide it with `--port` (or `-p`):
+
+```bash
+uv run apitest_runner --file samples/ --port 9000
+```
+
+## Development
+
+Run the complete unit test suite with:
 
 ```bash
 uv run pytest
 ```
 
-Run the test suite with coverage-style output for a specific area, for example:
+Run the test suite with coverage-style output, for example:
+
+```bash
+uv run pytest --cov --cov-report=term-missing --cov-report=html
+```
+
+Run the test suite with ci-style output for a specific area, for example:
 
 ```bash
 uv run pytest tests/services/test_orchestrator_service.py -q
