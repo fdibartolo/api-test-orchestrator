@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from apitest.auth_service import AuthService
-from models.apitestify_requests import (
+from models.apitest_requests import (
     AuthInfoVM,
     AuthMethod,
     GrantType,

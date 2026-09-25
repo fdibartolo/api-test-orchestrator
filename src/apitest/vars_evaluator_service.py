@@ -5,8 +5,8 @@ from typing import Any
 from jsonpath_ng.exceptions import JsonPathParserError
 from jsonpath_ng.ext import parse as jsonpath_parse
 
-from models.apitestify_requests import ApiTestRequestVM, AuthInfoVM
-from models.apitestify_responses import ApiTestResponseVM, FailedValidationVM
+from models.apitest_requests import ApiTestRequestVM, AuthInfoVM
+from models.apitest_responses import ApiTestResponseVM, FailedValidationVM
 
 _VARIABLE_PATTERN = re.compile(r"#\{(.+?)\}#")
 

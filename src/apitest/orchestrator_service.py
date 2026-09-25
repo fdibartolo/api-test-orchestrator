@@ -4,8 +4,8 @@ from time import sleep
 
 import requests
 
-from models.apitestify_requests import ApiTestRequestVMList
-from models.apitestify_responses import ApiTestResponseVM
+from models.apitest_requests import ApiTestRequestVMList
+from models.apitest_responses import ApiTestResponseVM
 
 from .auth_service import AuthService
 from .dynamic_vars_evaluator_service import DynamicVarsEvaluatorService

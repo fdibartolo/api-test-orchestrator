@@ -3,7 +3,7 @@ import socket
 import requests
 from pydantic import TypeAdapter, ValidationError
 
-from models.apitestify_responses import ApiTestResponseVM
+from models.apitest_responses import ApiTestResponseVM
 from runner.constants import GREEN, RED, RESET, YELLOW
 
 DEFAULT_HOST = "127.0.0.1"

@@ -4,8 +4,8 @@ from typing import Any
 from jsonpath_ng.exceptions import JsonPathParserError
 from jsonpath_ng.ext import parse as jsonpath_parse
 
-from models.apitestify_requests import ResponseValidationVM
-from models.apitestify_responses import ApiTestResponseVM, FailedValidationVM
+from models.apitest_requests import ResponseValidationVM
+from models.apitest_responses import ApiTestResponseVM, FailedValidationVM
 
 
 class ResponseValidationService:

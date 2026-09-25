@@ -5,7 +5,7 @@ from apitest.dynamic_vars_evaluator_service import DynamicVarsEvaluatorService
 from apitest.orchestrator_service import OrchestratorService
 from apitest.response_validation_service import ResponseValidationService
 from apitest.vars_evaluator_service import VariablesEvaluatorService
-from models.apitestify_requests import (
+from models.apitest_requests import (
     ApiTestRequestVM,
     ApiTestRequestVMList,
     AuthInfoVM,

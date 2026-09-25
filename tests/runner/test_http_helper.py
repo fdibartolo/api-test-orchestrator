@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import requests
 
-from models.apitestify_responses import ApiTestResponseVM, FailedValidationVM
+from models.apitest_responses import ApiTestResponseVM, FailedValidationVM
 from runner.http_helper import HttpHelper
 
 

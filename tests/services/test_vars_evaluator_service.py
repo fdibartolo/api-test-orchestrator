@@ -1,7 +1,7 @@
 import pytest
 
 from apitest.vars_evaluator_service import VariablesEvaluatorService
-from models.apitestify_requests import (
+from models.apitest_requests import (
     ApiTestRequestVM,
     AuthInfoVM,
     AuthMethod,
@@ -10,7 +10,7 @@ from models.apitestify_requests import (
     HttpTokenParameter,
     ResponseValidationVM,
 )
-from models.apitestify_responses import ApiTestResponseVM
+from models.apitest_responses import ApiTestResponseVM
 
 
 def build_auth_info(

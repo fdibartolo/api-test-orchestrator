@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 
 import requests
 
-from models.apitestify_requests import AuthInfoVM, GrantType
+from models.apitest_requests import AuthInfoVM, GrantType
 
 
 class AuthService:

@@ -1,6 +1,6 @@
 import argparse
 
-from models.apitestify_responses import ApiTestResponseVM
+from models.apitest_responses import ApiTestResponseVM
 from runner.constants import GREEN, RED, RESET, YELLOW
 from runner.file_helper import FileHelper
 from runner.http_helper import HttpHelper

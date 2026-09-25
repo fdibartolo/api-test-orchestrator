@@ -1,4 +1,4 @@
-from models.apitestify_requests import ApiTestRequestVM, ExpectedResponseVM
+from models.apitest_requests import ApiTestRequestVM, ExpectedResponseVM
 
 
 def test_expected_response_default_status_code() -> None:

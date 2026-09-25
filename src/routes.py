@@ -7,8 +7,8 @@ from apitest.dynamic_vars_evaluator_service import DynamicVarsEvaluatorService
 from apitest.orchestrator_service import OrchestratorService
 from apitest.response_validation_service import ResponseValidationService
 from apitest.vars_evaluator_service import VariablesEvaluatorService
-from models.apitestify_requests import ApiTestRequestVMList
-from models.apitestify_responses import ApiTestResponseVM
+from models.apitest_requests import ApiTestRequestVMList
+from models.apitest_responses import ApiTestResponseVM
 
 router = APIRouter()
 auth_service = AuthService()

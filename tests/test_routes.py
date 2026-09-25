@@ -9,8 +9,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from main import app
-from models.apitestify_requests import ApiTestRequestVM, ApiTestRequestVMList
-from models.apitestify_responses import ApiTestResponseVM
+from models.apitest_requests import ApiTestRequestVM, ApiTestRequestVMList
+from models.apitest_responses import ApiTestResponseVM
 from src import routes
 
 

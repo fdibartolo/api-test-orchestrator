@@ -1,4 +1,4 @@
-from models.apitestify_responses import ApiTestResponseVM, FailedValidationVM
+from models.apitest_responses import ApiTestResponseVM, FailedValidationVM
 
 
 def test_failed_validation_default_message_when_not_set() -> None:
