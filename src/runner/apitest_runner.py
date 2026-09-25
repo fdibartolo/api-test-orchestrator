@@ -1,6 +1,5 @@
 import argparse
 import glob
-import json
 import socket
 from pathlib import Path
 
@@ -65,16 +64,20 @@ def _resolve_files(path: str) -> list[str] | None:
     return None
 
 
-def _run_tests(files: list[str], port: int) -> list[str]:
+def _run_tests(
+    files: list[str], port: int
+) -> list[tuple[str, str | ApiTestResponseVM]]:
     failed_tests = []
     for file in files:
-        success, error_message = _send_json_file_as_request(file, port)
+        success, error = _send_json_file_as_request(file, port)
         if not success:
-            failed_tests.append((file, error_message))
+            failed_tests.append((file, error))
     return failed_tests
 
 
-def _send_json_file_as_request(file_path: str, port: int) -> tuple[bool, str | None]:
+def _send_json_file_as_request(
+    file_path: str, port: int
+) -> tuple[bool, str | ApiTestResponseVM | None]:
     try:
         print(
             f"• Running test suite {YELLOW}{file_path}{RESET}...",
@@ -122,23 +125,28 @@ def _send_json_file_as_request(file_path: str, port: int) -> tuple[bool, str | N
 
 def _check_apitest_response(
     response: list[ApiTestResponseVM],
-) -> tuple[bool, str | None]:
+) -> tuple[bool, ApiTestResponseVM | None]:
     failed_requests = [r for r in response if not r.isValidationSuccess]
 
     if failed_requests:
         # by design, no more than one failed request can be present, so [0] is safe
-        return False, failed_requests[0].model_dump_json()
+        return False, failed_requests[0]
     return True, None
 
 
-def _format_failed_tests(failed_tests: list[tuple[str, str | None]]) -> str:
+def _format_failed_tests(
+    failed_tests: list[tuple[str, str | ApiTestResponseVM]],
+) -> str:
     formatted_entries = []
-    for file_path, error_message in failed_tests:
-        try:
-            pretty_error = json.dumps(json.loads(error_message), indent=2)
-        except (TypeError, ValueError):
-            pretty_error = error_message
-        formatted_entries.append(f" ---------- File: {file_path} ----------\n\n{pretty_error}")
+    for file_path, error in failed_tests:
+        pretty_error = (
+            error.model_dump_json(indent=2)
+            if isinstance(error, ApiTestResponseVM)
+            else error
+        )
+        formatted_entries.append(
+            f" ---------- File: {file_path} ----------\n\n{pretty_error}"
+        )
     return "\n\n".join(formatted_entries)
 
 
@@ -167,4 +175,6 @@ def main(argv: list[str] | None = None) -> None:
     if not failed_tests:
         print(f"{GREEN} ✓ All tests have passed!{RESET}")
     else:
-        print(f"{RED} ✗ Some tests have failed:\n\n{_format_failed_tests(failed_tests)}{RESET}")
+        print(
+            f"{RED} ✗ Some tests have failed:\n\n{_format_failed_tests(failed_tests)}{RESET}"
+        )

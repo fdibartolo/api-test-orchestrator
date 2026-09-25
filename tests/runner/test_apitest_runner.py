@@ -1,4 +1,3 @@
-import json
 import socket
 from unittest.mock import patch
 
@@ -118,10 +117,9 @@ def test_check_apitest_response_returns_first_failed_request_as_json() -> None:
 
     assert not success
     assert failed_request is not None
-    failed_payload = json.loads(failed_request)
-    assert failed_payload["requestId"] == "request-1"
-    assert failed_payload["isValidationSuccess"] is False
-    assert failed_payload["failedValidations"][0]["key"] == "status"
+    assert failed_request.requestId == "request-1"
+    assert failed_request.isValidationSuccess is False
+    assert failed_request.failedValidations[0].key == "status"
 
 
 def test_send_json_file_as_request_returns_success_and_no_error(
@@ -225,9 +223,8 @@ def test_send_json_file_as_request_reports_validation_failures(
     success, failed_request = result
     assert not success
     assert failed_request is not None
-    failed_payload = json.loads(failed_request)
-    assert failed_payload["requestId"] == "request-1"
-    assert failed_payload["failedValidations"][0]["key"] == "status"
+    assert failed_request.requestId == "request-1"
+    assert failed_request.failedValidations[0].key == "status"
     assert "FAILED" in capsys.readouterr().out
 
 
