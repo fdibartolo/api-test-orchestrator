@@ -1,5 +1,6 @@
 import os
 
+from dotenv import dotenv_values
 from fastapi import APIRouter
 
 from apitest.auth_service import AuthService
@@ -15,10 +16,7 @@ auth_service = AuthService()
 response_validation_service = ResponseValidationService()
 vars_evaluator_service = VariablesEvaluatorService()
 dynamic_vars_evaluator_service = DynamicVarsEvaluatorService()
-secrets = {
-    "G_CTWR-Secrets-Env-AzureAD_ClientSecret": os.getenv("AZURE_AD_CLIENT_SECRET"),
-    "G_CTWR-Secrets-Env-TestId_Password": os.getenv("TEST_ID_PASSWORD"),
-}
+secrets = dotenv_values(".env") if os.path.exists(".env") else {}
 orchestrator_service = OrchestratorService(
     auth_service,
     response_validation_service,
