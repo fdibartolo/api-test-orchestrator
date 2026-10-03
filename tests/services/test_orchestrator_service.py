@@ -1,5 +1,9 @@
 from unittest.mock import MagicMock, create_autospec, patch
 
+import pytest
+import requests
+from fastapi import HTTPException
+
 from apitest.auth_service import AuthService
 from apitest.dynamic_vars_evaluator_service import DynamicVarsEvaluatorService
 from apitest.orchestrator_service import OrchestratorService
@@ -150,6 +154,51 @@ def test_validate_stops_after_first_failed_response(mock_request: MagicMock) -> 
     assert responses[0].requestId == "failing-request"
     assert responses[0].isValidationSuccess is False
     mock_request.assert_called_once()
+
+
+@pytest.mark.parametrize("use_request_authentication", [False, True])
+@pytest.mark.parametrize(
+    "connection_error", [ConnectionError, requests.ConnectionError]
+)
+def test_validate_maps_auth_connection_error_to_bad_gateway(
+    use_request_authentication: bool, connection_error: type[Exception]
+) -> None:
+    auth_service = create_autospec(AuthService, instance=True)
+    response_validation_service = create_autospec(
+        ResponseValidationService, instance=True
+    )
+    vars_evaluator_service = create_autospec(VariablesEvaluatorService, instance=True)
+    dynamic_vars_evaluator_service = create_autospec(
+        DynamicVarsEvaluatorService, instance=True
+    )
+    authentication = AuthInfoVM(type=AuthMethod.BEARER, tokenProvided="provided-token")
+    api_request = ApiTestRequestVM(
+        id="get-user",
+        url="https://api.example.test/users/42",
+        method="GET",
+        expectedResponse=ExpectedResponseVM(status=200),
+        authenticationParams=authentication if use_request_authentication else None,
+    )
+    request_list = ApiTestRequestVMList(
+        authenticationParams=None if use_request_authentication else authentication,
+        apiTestRequests=[api_request],
+        globalVariables={},
+    )
+    auth_service.get_auth_token.side_effect = connection_error("auth unavailable")
+    orchestrator = OrchestratorService(
+        auth_service,
+        response_validation_service,
+        vars_evaluator_service,
+        dynamic_vars_evaluator_service,
+        {},
+    )
+
+    with pytest.raises(HTTPException) as error:
+        orchestrator.validate(request_list)
+
+    assert error.value.status_code == 502
+    assert error.value.detail == "auth unavailable"
+    auth_service.get_auth_token.assert_called_once_with(authentication)
 
 
 @patch("apitest.orchestrator_service.requests.request")

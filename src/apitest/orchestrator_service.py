@@ -3,6 +3,7 @@ from http import HTTPStatus
 from time import sleep
 
 import requests
+from fastapi import HTTPException
 
 from models.apitest_requests import ApiTestRequestVMList
 from models.apitest_responses import ApiTestResponseVM
@@ -51,7 +52,7 @@ class OrchestratorService:
             self.vars_evaluator_service.replace_secrets(
                 self.secrets, request.authenticationParams
             )
-            auth_token = self.auth_service.get_auth_token(request.authenticationParams)
+            auth_token = self._get_auth_token(request.authenticationParams)
         else:
             auth_token = None
 
@@ -77,7 +78,7 @@ class OrchestratorService:
                 self.vars_evaluator_service.replace_secrets(
                     self.secrets, api_test_request.authenticationParams
                 )
-                request_auth_token = self.auth_service.get_auth_token(
+                request_auth_token = self._get_auth_token(
                     api_test_request.authenticationParams
                 )
 
@@ -126,6 +127,12 @@ class OrchestratorService:
                 sleep(float(api_test_request.waitForEventPropagation))
 
         return responses
+
+    def _get_auth_token(self, auth_params):
+        try:
+            return self.auth_service.get_auth_token(auth_params)
+        except (ConnectionError, requests.ConnectionError) as error:
+            raise HTTPException(status_code=502, detail=str(error)) from error
 
     def _get_original_response(self, response: requests.Response):
         if response.status_code == HTTPStatus.NO_CONTENT:
