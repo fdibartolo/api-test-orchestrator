@@ -83,7 +83,10 @@ class OrchestratorService:
                 )
 
             kwargs = api_test_request.build_request_kwargs(request_auth_token)
-            response = requests.request(**kwargs)
+            try:
+                response = requests.request(**kwargs)
+            except requests.RequestException as error:
+                raise HTTPException(status_code=502, detail=str(error)) from error
 
             api_test_response = ApiTestResponseVM(
                 requestId=api_test_request.id,

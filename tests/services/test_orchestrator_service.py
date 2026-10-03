@@ -201,6 +201,46 @@ def test_validate_maps_auth_connection_error_to_bad_gateway(
     auth_service.get_auth_token.assert_called_once_with(authentication)
 
 
+@pytest.mark.parametrize("request_error", [requests.ConnectionError, requests.Timeout])
+@patch("apitest.orchestrator_service.requests.request")
+def test_validate_maps_request_error_to_bad_gateway(
+    mock_request: MagicMock, request_error: type[requests.RequestException]
+) -> None:
+    auth_service = create_autospec(AuthService, instance=True)
+    response_validation_service = create_autospec(
+        ResponseValidationService, instance=True
+    )
+    vars_evaluator_service = create_autospec(VariablesEvaluatorService, instance=True)
+    dynamic_vars_evaluator_service = create_autospec(
+        DynamicVarsEvaluatorService, instance=True
+    )
+    request_list = ApiTestRequestVMList(
+        apiTestRequests=[
+            ApiTestRequestVM(
+                id="get-user",
+                url="https://api.example.test/users/42",
+                method="GET",
+                expectedResponse=ExpectedResponseVM(status=200),
+            )
+        ],
+        globalVariables={},
+    )
+    mock_request.side_effect = request_error("upstream unavailable")
+    orchestrator = OrchestratorService(
+        auth_service,
+        response_validation_service,
+        vars_evaluator_service,
+        dynamic_vars_evaluator_service,
+        {},
+    )
+
+    with pytest.raises(HTTPException) as error:
+        orchestrator.validate(request_list)
+
+    assert error.value.status_code == 502
+    assert error.value.detail == "upstream unavailable"
+
+
 @patch("apitest.orchestrator_service.requests.request")
 def test_validate_returns_empty_response_for_no_content(
     mock_request: MagicMock,
