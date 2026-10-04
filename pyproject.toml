@@ -17,6 +17,7 @@ dependencies = [
 
 [project.scripts]
 apitest_runner = "runner.apitest_runner:main"
+sample_api = "sample_api.sample_api:main"
 
 [build-system]
 requires = ["uv_build>=0.12.13,<0.13.0"]
@@ -31,6 +32,7 @@ dev = [
 
 [tool.coverage.run]
 source = ["src"]
+omit = ["src/sample_api/**"]
 
 [tool.coverage.report]
 exclude_also = [

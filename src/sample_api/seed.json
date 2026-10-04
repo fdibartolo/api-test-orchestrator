@@ -1,0 +1,25 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Lionel Messi",
+      "nickname": "lio",
+      "username": "lionelm",
+      "email": "lionel.messi@example.com"
+    },
+    {
+      "id": 2,
+      "name": "Sergio Aguero",
+      "nickname": "kun",
+      "username": "sergioa",
+      "email": "sergio.aguero@example.com"
+    },
+    {
+      "id": 3,
+      "name": "Emiliano Martinez",
+      "nickname": "dibu",
+      "username": "emilianom",
+      "email": "emiliano.martinez@example.com"
+    }
+  ]
+}
