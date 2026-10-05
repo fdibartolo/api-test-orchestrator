@@ -166,16 +166,20 @@ def test_validate_resolves_global_dynamic_variables_once_before_requests(
         "traceId": expected_trace,
         "resourceId": 42,
     }
-    assert mock_request.call_args_list == [
-        call(
-            method="POST",
-            url=f"https://api.example.test/resources/{expected_trace}",
-            headers={"X-Trace": expected_trace},
-            cookies=None,
-            params={"trace": expected_trace},
-            json={"trace": expected_trace},
-        )
-    ] * 2
+    assert (
+        mock_request.call_args_list
+        == [
+            call(
+                method="POST",
+                url=f"https://api.example.test/resources/{expected_trace}",
+                headers={"X-Trace": expected_trace},
+                cookies=None,
+                params={"trace": expected_trace},
+                json={"trace": expected_trace},
+            )
+        ]
+        * 2
+    )
 
 
 @patch("apitest.orchestrator_service.requests.request")
