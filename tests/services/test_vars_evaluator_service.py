@@ -108,6 +108,38 @@ def test_replace_variables_updates_request_and_validations() -> None:
     )
 
 
+def test_replace_variables_handles_extracted_integer() -> None:
+    service = VariablesEvaluatorService()
+    variables, failures = service.resolve_request_variables(
+        {"userId": "$.user.id"}, build_response({"user": {"id": 42}})
+    )
+    request = build_request()
+    request.headers["X-User"] = "#{userId}#"
+    request.cookies["user"] = "#{userId}#"
+    request.queryParams["user"] = "#{userId}#"
+    request.variables["nested"] = "#{userId}#"
+    validation = request.expectedResponse.contentValidations["$.users[#{userId}#]"]
+    validation.value = "#{userId}#"
+    validation.errorMessage = "Invalid #{userId}#"
+
+    service.replace_variables(variables, request)
+
+    assert failures == []
+    assert variables == {"userId": 42}
+    assert request.url == "https://example.test/#{host}#/users/42"
+    assert request.headers["X-User"] == "42"
+    assert request.headers["X-Unknown"] == "#{missing}#"
+    assert request.cookies["user"] == "42"
+    assert request.queryParams["user"] == "42"
+    assert request.variables["nested"] == "42"
+    assert request.jsonBody == {"userId": "42", "active": True}
+    assert request.expectedResponse.contentValidations["$.users[42]"].value == "42"
+    assert (
+        request.expectedResponse.contentValidations["$.users[42]"].errorMessage
+        == "Invalid 42"
+    )
+
+
 def test_replace_variables_round_trips_json_body() -> None:
     request = ApiTestRequestVM(
         id="request-id",

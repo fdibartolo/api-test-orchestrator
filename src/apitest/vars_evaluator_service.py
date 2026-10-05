@@ -33,12 +33,13 @@ class VariablesEvaluatorService:
         )
 
     def replace_variables(
-        self, variables: dict[str, str], api_test_request: ApiTestRequestVM
+        self, variables: dict[str, Any], api_test_request: ApiTestRequestVM
     ) -> None:
         """Replace request-variable placeholders throughout an API test request.
 
         URL components, request bodies, variables, and response validations are
-        updated in place. Unresolved placeholders remain unchanged.
+        updated in place. Replacement values are converted to strings.
+        Unresolved placeholders remain unchanged.
 
         Args:
             variables: Variable names and their replacement values.
@@ -83,11 +84,11 @@ class VariablesEvaluatorService:
                 updated_validations[updated_key] = validation
             api_test_request.expectedResponse.contentValidations = updated_validations
 
-    def _replace_value(self, value: Any, variables: dict[str, str]) -> Any:
+    def _replace_value(self, value: Any, variables: dict[str, Any]) -> Any:
         if not isinstance(value, str):
             return value
         return _VARIABLE_PATTERN.sub(
-            lambda match: variables.get(match.group(1), match.group(0)), value
+            lambda match: str(variables.get(match.group(1), match.group(0))), value
         )
 
     def resolve_request_variables(
