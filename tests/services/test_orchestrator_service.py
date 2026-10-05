@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, create_autospec, patch
+from unittest.mock import MagicMock, call, create_autospec, patch
 
 import pytest
 import requests
@@ -50,6 +50,7 @@ def test_validate_returns_successful_response_for_happy_path(
 
     auth_service.get_auth_token.return_value = "access-token"
     dynamic_vars_evaluator_service.replace_dynamic_variables.side_effect = [
+        {"environment": "test"},
         {"some_key": "some_value", "dynamic_field": "123abc"},
         {"requestedAt": "2026-09-16T12:00:00Z"},
     ]
@@ -77,6 +78,11 @@ def test_validate_returns_successful_response_for_happy_path(
     vars_evaluator_service.replace_variables.assert_called_once_with(
         request_list.globalVariables, api_request
     )
+    assert dynamic_vars_evaluator_service.replace_dynamic_variables.call_args_list == [
+        call({"environment": "test"}),
+        call({"some_key": "some_value", "dynamic_field": "{{DynamicRandomGuid}}"}),
+        call({"requestedAt": "{{DynamicNow}}"}),
+    ]
     mock_request.assert_called_once_with(
         method="GET",
         url="https://api.example.test/users/42",
@@ -100,6 +106,76 @@ def test_validate_returns_successful_response_for_happy_path(
     assert responses[0].failedValidations == []
     assert responses[0].isValidationSuccess is True
     assert request_list.globalVariables == {"environment": "test", "userId": 42}
+
+
+@pytest.mark.parametrize(
+    ("trace_value", "expected_trace", "guid_calls"),
+    [
+        ("{{DynamicRandomGuid}}", "generated-guid", 1),
+        ("literal-trace", "literal-trace", 0),
+    ],
+)
+@patch("apitest.dynamic_vars_evaluator_service.uuid.uuid4")
+@patch("apitest.orchestrator_service.requests.request")
+def test_validate_resolves_global_dynamic_variables_once_before_requests(
+    mock_request: MagicMock,
+    mock_uuid: MagicMock,
+    trace_value: str,
+    expected_trace: str,
+    guid_calls: int,
+) -> None:
+    mock_uuid.return_value = "generated-guid"
+    response_validation_service = create_autospec(
+        ResponseValidationService, instance=True
+    )
+    response_validation_service.validate_response.return_value = []
+    request_list = ApiTestRequestVMList(
+        globalVariables={"traceId": trace_value},
+        apiTestRequests=[
+            ApiTestRequestVM(
+                id=request_id,
+                url="https://api.example.test/resources/#{traceId}#",
+                method="POST",
+                headers={"X-Trace": "#{traceId}#"},
+                queryParams={"trace": "#{traceId}#"},
+                jsonBody={"trace": "#{traceId}#"},
+                variables={"resourceId": "$.id"},
+            )
+            for request_id in ("first", "second")
+        ],
+    )
+    http_response = MagicMock()
+    http_response.status_code = 200
+    http_response.headers = {"Content-Type": "application/json"}
+    http_response.json.return_value = {"id": 42}
+    mock_request.return_value = http_response
+    orchestrator = OrchestratorService(
+        create_autospec(AuthService, instance=True),
+        response_validation_service,
+        VariablesEvaluatorService(),
+        DynamicVarsEvaluatorService(),
+        {},
+    )
+
+    responses = orchestrator.validate(request_list)
+
+    assert len(responses) == 2
+    assert all(response.isValidationSuccess for response in responses)
+    assert mock_uuid.call_count == guid_calls
+    assert request_list.globalVariables == {
+        "traceId": expected_trace,
+        "resourceId": 42,
+    }
+    assert mock_request.call_args_list == [
+        call(
+            method="POST",
+            url=f"https://api.example.test/resources/{expected_trace}",
+            headers={"X-Trace": expected_trace},
+            cookies=None,
+            params={"trace": expected_trace},
+            json={"trace": expected_trace},
+        )
+    ] * 2
 
 
 @patch("apitest.orchestrator_service.requests.request")

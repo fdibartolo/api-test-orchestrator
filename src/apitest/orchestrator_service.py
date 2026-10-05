@@ -56,6 +56,12 @@ class OrchestratorService:
         else:
             auth_token = None
 
+        request.globalVariables = (
+            self.dynamic_vars_evaluator_service.replace_dynamic_variables(
+                request.globalVariables
+            )
+        )
+
         responses = []
         for api_test_request in request.apiTestRequests:
             self.vars_evaluator_service.replace_variables(
