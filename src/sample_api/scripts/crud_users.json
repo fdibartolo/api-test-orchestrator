@@ -1,0 +1,95 @@
+{
+	"globalVariables": {
+		"baseUrl": "http://localhost:8001",
+        "randomId": "{{DynamicRandomNumber}}:3"
+	},
+	"apiTestRequests": [
+		{
+			"id": "get-all-users",
+			"url": "#{baseUrl}#/users",
+			"method": "GET",
+			"expectedResponse": {
+				"status": 200,
+				"contentValidations": {
+					"$.data": {
+						"type": "length",
+						"value": "3",
+						"message": "Should return 3 users"
+					},
+					"$.data[?(@.name == 'Lionel Messi')].nickname": {
+						"type": "equals",
+						"value": "lio",
+						"message": "Messi's nickname should be 'lio'"
+					}
+				}
+			}
+		},
+		{
+			"id": "create-user",
+			"url": "#{baseUrl}#/users",
+			"method": "POST",
+			"jsonBody": {
+                "name": "Diego Maradona",
+                "nickname": "dios",
+                "username": "diegom",
+                "email": "diego.maradona@example.com"
+			},
+            "variables": {
+                "createdUserId": "$.id"
+            },
+			"expectedResponse": {
+				"status": 201,
+				"contentValidations": {
+					"$.id": {
+						"type": "notnull"
+					},
+					"$.username": {
+						"type": "equals",
+						"value": "diegom"
+					}
+				}
+			}
+		},
+		{
+			"id": "update-user",
+			"url": "#{baseUrl}#/users/#{createdUserId}#",
+			"method": "PATCH",
+			"jsonBody": {
+                "nickname": "d10s"
+			},
+			"expectedResponse": {
+				"status": 200
+			}
+		},
+		{
+			"id": "get-updated-user",
+			"url": "#{baseUrl}#/users/#{createdUserId}#",
+			"method": "GET",
+			"expectedResponse": {
+				"status": 200,
+				"contentValidations": {
+					"$.nickname": {
+						"type": "equals",
+						"value": "d10s"
+					}
+				}
+			}
+		},
+		{
+			"id": "delete-nonexistent-user",
+			"url": "#{baseUrl}#/users/#{randomId}#",
+			"method": "DELETE",
+			"expectedResponse": {
+				"status": 404
+			}
+		},
+		{
+			"id": "delete-created-user",
+			"url": "#{baseUrl}#/users/#{createdUserId}#",
+			"method": "DELETE",
+			"expectedResponse": {
+				"status": 204
+			}
+		}
+    ]
+}
