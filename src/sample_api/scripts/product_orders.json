@@ -1,0 +1,101 @@
+{
+	"globalVariables": {
+		"productsUrl": "https://dummyjson.com",
+		"internalUrl": "http://localhost:8001"
+	},
+	"apiTestRequests": [
+		{
+			"id": "get-products",
+			"url": "#{productsUrl}#/products",
+			"method": "GET",
+            "queryParams": {
+                "limit": "5",
+                "skip": "0"
+            },
+            "variables": {
+                "firstProductId": "$.products[0].id",
+                "firstProductTitle": "$.products[0].title",
+                "firstProductCategory": "$.products[0].category",
+                "firstProductPrice": "$.products[0].price"
+            },
+            "expectedResponse": {
+				"status": 200,
+				"contentValidations": {
+					"$.products": {
+						"type": "length",
+						"value": "5",
+						"message": "Should return 5 products"
+					}
+				}
+			}
+		},
+		{
+			"id": "get-all-users",
+			"url": "#{internalUrl}#/users",
+			"method": "GET",
+            "variables": {
+                "messiId": "$.data[?(@.name == 'Lionel Messi')].id"
+            }
+		},
+		{
+			"id": "create-order",
+			"url": "#{internalUrl}#/orders",
+			"method": "POST",
+			"jsonBody": {
+                "user_id": "#{messiId}#",
+                "datetime": "{{DynamicNow}}",
+                "products": [{
+                    "product_id": "#{firstProductId}#",
+                    "title": "#{firstProductTitle}#",
+                    "category": "#{firstProductCategory}#",
+                    "price": "#{firstProductPrice}#"
+                }]
+			},
+            "variables": {
+                "orderId": "$.id"
+            },
+			"expectedResponse": {
+				"status": 201
+			}
+		},
+		{
+			"id": "get-order",
+			"url": "#{internalUrl}#/orders/#{orderId}#",
+			"method": "GET",
+			"expectedResponse": {
+				"status": 200,
+				"contentValidations": {
+					"$.user_id": {
+						"type": "equals",
+						"value": "#{messiId}#",
+						"message": "Should equals messi id"
+					},
+					"$.products": {
+						"type": "length",
+						"value": "1",
+						"message": "Should return 1 product"
+					}
+				}
+			}
+		},
+		{
+			"id": "get-products-by-category",
+			"url": "#{productsUrl}#/products/category/#{firstProductCategory}#",
+			"method": "GET",
+            "expectedResponse": {
+				"status": 200,
+				"contentValidations": {
+					"$.products[?(@.id == #{firstProductId}#)]": {
+						"type": "notnull",
+						"message": "Should contain the given product"
+					},
+					"$.products[?(@.id == #{firstProductId}#)].title": {
+						"type": "equals",
+						"value": "#{firstProductTitle}#",
+						"message": "Should equal the given product title"
+					}
+				}
+			}
+		}
+    ]
+}

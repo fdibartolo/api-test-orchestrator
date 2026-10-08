@@ -18,6 +18,7 @@
 - [How do I generate API test samples with AI?](#how-do-i-generate-api-test-samples-with-ai)
 - [How do I run tests?](#how-do-i-run-tests)
 	- [API test runner](#api-test-runner)
+- [Sample project, see it working!](#sample-api)
 - [Development](#development)
 
 ## What is this?
@@ -349,6 +350,39 @@ The runner defaults to port `8000`. If the API Test Orchestrator is listening on
 ```bash
 uv run apitest_runner --file samples/ --port 9000
 ```
+
+## Sample working project
+
+The `sample api` provides a local, fully-working example of how to use the API Test Orchestrator. It acts as a small REST API for managing collections of resources: `GET /{resource}` lists all items, `GET /{resource}/{id}` retrieves an item by ID, `POST /{resource}` creates an item with an automatically assigned ID, `PATCH /{resource}/{id}` updates selected fields, and `DELETE /{resource}/{id}` removes an item. These operations provide a local target for testing complete resource lifecycles, chaining requests with IDs extracted from earlier responses, and validating status codes and response content. The `resource` can be:
+- `users`
+- `orders`
+
+The [scripts directory](src/sample_api/scripts) contains working API test scripts:
+- `crud_users.json` examplifies all CRUD operations for the `users` resource
+- `product_orders.json` examplifies integration between external APIs along with `users` and `orders` resources
+
+
+Run the following commands from the repository root in separate terminals:
+
+1. Start the sample API on `http://127.0.0.1:8001`:
+
+	```bash
+	uv run sample_api
+	```
+
+2. Start the API Test Orchestrator on `http://127.0.0.1:8000`:
+
+	```bash
+	uv run fastapi dev
+	```
+
+3. Run the example scripts through the orchestrator:
+
+	```bash
+	uv run apitest_runner --file src/sample_api/scripts/
+	```
+
+Keep both servers running while executing the scripts. The sample API stores data in memory and reloads its seed data whenever it restarts.
 
 ## Development
 
