@@ -384,6 +384,17 @@ Run the following commands from the repository root in separate terminals:
 
 Keep both servers running while executing the scripts. The sample API stores data in memory and reloads its seed data whenever it restarts.
 
+**Alternatively**, start both servers together with docker compose instead of running steps 1 and 2 in separate terminals:
+
+```bash
+docker-compose -f docker_compose_sample_api.yml up --build
+```
+
+Then run the example scripts from another terminal using the command in step 3. 
+
+**Important**, if going with this approach, make sure you update services url's within the [scripts files](src/sample_api/scripts), by replacing `http://localhost:8001` with `http://sample-api:8001`
+
+
 ## Development
 
 Run the complete unit test suite with:
